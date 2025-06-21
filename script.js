@@ -19,13 +19,19 @@ fetch('data.json')
 
     const usedIds = new Set();
 
-    // Функция для создания блока человека (ФИО и дата рождения)
+    // Создаём блок с ФИО и датой рождения, учитывая девичью фамилию
     function createPersonBlock(person) {
       const personDiv = document.createElement('div');
       personDiv.className = 'person';
 
       const parts = [];
-      if (person.surname) parts.push(person.surname);
+      if (person.surname) {
+        if (person.maidenSurname) {
+          parts.push(`${person.surname} (${person.maidenSurname})`);
+        } else {
+          parts.push(person.surname);
+        }
+      }
       if (person.name) parts.push(person.name);
       if (person.patronymic) parts.push(person.patronymic);
 
@@ -45,7 +51,7 @@ fetch('data.json')
       return personDiv;
     }
 
-    // Функция для создания узла дерева с пометкой использованных ID
+    // Создаём узел дерева, помечая использованных людей
     function createTreeNodeWithMark(person) {
       usedIds.add(person.id);
       if (person.spouseId) usedIds.add(person.spouseId);
@@ -84,7 +90,7 @@ fetch('data.json')
       return container;
     }
 
-    // Находим корневых предков — у которых нет родителей
+    // Находим корневых (без родителей)
     const roots = data.filter(person => (!person.parents || person.parents.length === 0));
 
     const treeContainer = document.getElementById('tree');
