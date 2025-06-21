@@ -1,48 +1,44 @@
-function buildTree(data, parentId = null) {
-  return data
-    .filter(person => person.parent_id === parentId)
-    .map(person => {
-      const children = buildTree(data, person.id);
-      return {
-        ...person,
-        children
-      };
+function createTreeNode(person) {
+  const container = document.createElement('div');
+  container.className = 'person-container';
+
+  const couple = document.createElement('div');
+  couple.className = 'couple';
+
+  const personDiv = document.createElement('div');
+  personDiv.className = 'person';
+  personDiv.textContent = person.name;
+
+  couple.appendChild(personDiv);
+
+  if (person.spouse) {
+    const spouseDiv = document.createElement('div');
+    spouseDiv.className = 'person';
+    spouseDiv.textContent = person.spouse;
+    couple.appendChild(spouseDiv);
+  }
+
+  container.appendChild(couple);
+
+  if (person.children && person.children.length > 0) {
+    const childrenDiv = document.createElement('div');
+    childrenDiv.className = 'children';
+
+    person.children.forEach(child => {
+      const childNode = createTreeNode(child);
+      childrenDiv.appendChild(childNode);
     });
-}
 
-function renderTree(nodes) {
-  const ul = document.createElement('ul');
+    container.appendChild(childrenDiv);
+  }
 
-  nodes.forEach(node => {
-    const li = document.createElement('li');
-    const div = document.createElement('div');
-    div.className = 'node';
-    div.textContent = node.full_name;
-    li.appendChild(div);
-
-    if (node.children && node.children.length > 0) {
-      const childrenUl = renderTree(node.children);
-      childrenUl.classList.add('children', 'hidden');
-      li.appendChild(childrenUl);
-
-      div.addEventListener('click', () => {
-        childrenUl.classList.toggle('hidden');
-      });
-    }
-
-    ul.appendChild(li);
-  });
-
-  return ul;
+  return container;
 }
 
 fetch('data.json')
   .then(response => response.json())
   .then(data => {
-    const treeData = buildTree(data);
-    const container = document.getElementById('tree-container');
-    container.appendChild(renderTree(treeData));
-  })
-  .catch(error => {
-    console.error("Ошибка загрузки данных:", error);
+    const treeContainer = document.getElementById('tree');
+    const tree = createTreeNode(data);
+    treeContainer.appendChild(tree);
   });
