@@ -1,31 +1,38 @@
+body {
+  font-family: Arial, sans-serif;
+  user-select: none;
+}
+
 #tree {
+  max-width: 1200px;
+  margin: 20px auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 30px;
-  font-family: Arial, sans-serif;
   font-size: 14px;
 }
 
-/* Контейнер семьи */
+/* Узел семьи */
 .person-container {
   position: relative;
-  margin-top: 15px;
-  padding-top: 15px;
+  margin-top: 30px;
+  padding-top: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 180px;
 }
 
 /* Пара супругов */
 .couple {
-  position: relative;
   display: flex;
-  gap: 15px;
-  padding: 0 10px;
+  gap: 30px;
+  justify-content: center;
+  position: relative;
+  min-width: 180px;
 }
 
-/* Горизонтальная линия между супругами */
+/* Линия между супругами */
 .couple::before {
   content: '';
   position: absolute;
@@ -34,83 +41,96 @@
   right: 0;
   height: 2px;
   background: #666;
+  transform: translateY(-50%);
   z-index: 0;
 }
 
-/* Блок одного человека */
+/* Карточка с человеком */
 .person {
-  background-color: #eef;
+  width: 160px;
+  padding: 6px 8px;
   border: 2px solid #4488cc;
-  border-radius: 5px;
-  padding: 6px 12px;
+  border-radius: 6px;
+  background: #eef3ff;
+  text-align: center;
   font-weight: bold;
   position: relative;
   z-index: 1;
-  width: 160px;
-  text-align: center;
   white-space: nowrap;
-  user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: default;
 }
 
-/* Имя и отчество */
-.person-name {
-  line-height: 1.1;
-}
-
-/* Дата рождения */
-.person-birthdate {
+.maiden-name {
+  font-style: italic;
   font-weight: normal;
-  font-size: 12px;
-  color: #444;
-  margin-top: 3px;
+  color: #666;
+  margin-left: 4px;
+  font-size: 0.85em;
 }
 
-/* Вертикальная линия от пары к детям */
+.birth-date {
+  font-weight: normal;
+  font-size: 0.85em;
+  margin-top: 3px;
+  color: #555;
+}
+
+.children {
+  display: flex;
+  gap: 40px;
+  margin-top: 30px;
+  position: relative;
+  min-width: 100%;
+  justify-content: center;
+}
+
+/* Вертикальные линии */
 .person-container > .children::before {
   content: '';
   position: absolute;
   top: 0;
   left: 50%;
   width: 2px;
-  height: 20px;
+  height: 25px;
   background: #666;
   transform: translateX(-50%);
   z-index: 0;
 }
 
-/* Контейнер детей */
-.children {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin-top: 15px;
-  position: relative;
-}
-
-/* Вертикальные линии от детей к родительской линии */
 .children > .person-container::before {
   content: '';
   position: absolute;
-  top: -20px;
+  top: -25px;
   left: 50%;
   width: 2px;
-  height: 20px;
+  height: 25px;
   background: #666;
   transform: translateX(-50%);
   z-index: 0;
 }
 
-/* Цвета по уровням для визуального различия поколений */
-.person-container.level-0 > .couple > .person {
-  background-color: #cce5ff;
+/* Кнопка раскрытия */
+.toggle-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: #4488cc;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 24px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  z-index: 10;
 }
 
-.person-container.level-1 > .couple > .person {
-  background-color: #d4edda;
+/* Скрытые дети */
+.children.hidden {
+  display: none;
 }
-
-.person-container.level-2 > .couple > .person {
-  background-color: #fff3cd;
-}
-
-/* Можно добавить больше уровней, если нужно */
