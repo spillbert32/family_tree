@@ -19,7 +19,33 @@ fetch('data.json')
 
     const usedIds = new Set();
 
-    // Функция, которая строит дерево и помечает использованных
+    // Функция для создания блока человека (ФИО и дата рождения)
+    function createPersonBlock(person) {
+      const personDiv = document.createElement('div');
+      personDiv.className = 'person';
+
+      const parts = [];
+      if (person.surname) parts.push(person.surname);
+      if (person.name) parts.push(person.name);
+      if (person.patronymic) parts.push(person.patronymic);
+
+      const fullName = document.createElement('div');
+      fullName.textContent = parts.join(' ');
+      fullName.className = 'person-name';
+
+      const birthdate = document.createElement('div');
+      birthdate.textContent = person.birthdate || '';
+      birthdate.className = 'person-birthdate';
+
+      personDiv.appendChild(fullName);
+      if (birthdate.textContent) {
+        personDiv.appendChild(birthdate);
+      }
+
+      return personDiv;
+    }
+
+    // Функция для создания узла дерева с пометкой использованных ID
     function createTreeNodeWithMark(person) {
       usedIds.add(person.id);
       if (person.spouseId) usedIds.add(person.spouseId);
@@ -58,7 +84,7 @@ fetch('data.json')
       return container;
     }
 
-    // Находим корневых предков (без родителей), исключая уже использованных (супругов)
+    // Находим корневых предков — у которых нет родителей
     const roots = data.filter(person => (!person.parents || person.parents.length === 0));
 
     const treeContainer = document.getElementById('tree');
@@ -69,24 +95,3 @@ fetch('data.json')
       }
     });
   });
-
-// Создание блока с человеком
-function createPersonBlock(person) {
-  const personDiv = document.createElement('div');
-  personDiv.className = 'person';
-
-  const fullName = document.createElement('div');
-  fullName.textContent = `${person.name} ${person.patronymic || ''}`.trim();
-  fullName.className = 'person-name';
-
-  const birthdate = document.createElement('div');
-  birthdate.textContent = person.birthdate || '';
-  birthdate.className = 'person-birthdate';
-
-  personDiv.appendChild(fullName);
-  if (birthdate.textContent) {
-    personDiv.appendChild(birthdate);
-  }
-
-  return personDiv;
-}
