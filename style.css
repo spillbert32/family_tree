@@ -14,7 +14,7 @@ body {
 
 /* Узел семьи */
 .person-container {
-  position: relative;
+  position: relative; /* важно для кнопки и линий */
   margin-top: 30px;
   padding-top: 30px;
   display: flex;
@@ -112,10 +112,11 @@ body {
 }
 
 /* Кнопка раскрытия */
-.toggle-btn {
+/* Переносим кнопку в область .couple, чтобы она не съезжала */
+.person-container > .toggle-btn {
   position: absolute;
-  top: -12px;
-  right: -12px;
+  top: 0; /* у верхнего края контейнера */
+  right: 0; /* справа в пределах контейнера */
   width: 24px;
   height: 24px;
   background: #4488cc;
@@ -128,6 +129,7 @@ body {
   cursor: pointer;
   user-select: none;
   z-index: 10;
+  transform: translate(50%, -50%);
 }
 
 /* Скрытые дети */
