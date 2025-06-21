@@ -1,33 +1,31 @@
 #tree {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   margin-top: 30px;
   font-family: Arial, sans-serif;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  font-size: 14px; /* чуть меньше шрифт */
+  font-size: 14px;
 }
 
-/* Контейнер одной семьи */
+/* Контейнер семьи */
 .person-container {
   position: relative;
-  margin-top: 12px; /* уменьшенный отступ сверху */
-  padding-top: 12px; /* уменьшенный padding */
+  margin-top: 15px;
+  padding-top: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Горизонтальная линия от родителей */
+/* Пара супругов */
 .couple {
-  display: flex;
-  gap: 15px; /* уменьшенный gap между супругами */
   position: relative;
+  display: flex;
+  gap: 15px;
   padding: 0 10px;
 }
 
-/* Горизонтальная линия между мужем и женой */
+/* Горизонтальная линия между супругами */
 .couple::before {
   content: '';
   position: absolute;
@@ -39,29 +37,32 @@
   z-index: 0;
 }
 
-/* Каждый человек */
+/* Блок одного человека */
 .person {
   background-color: #eef;
-  border-radius: 5px;
-  padding: 6px 12px; /* уменьшенный padding */
   border: 2px solid #4488cc;
+  border-radius: 5px;
+  padding: 6px 12px;
   font-weight: bold;
   position: relative;
   z-index: 1;
-  white-space: nowrap; /* чтобы ФИО не переносилось */
-  font-size: 13px; /* чуть меньше */
+  width: 160px;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
 }
 
-/* Имя и дата отдельно для более компактного расположения */
+/* Имя и отчество */
 .person-name {
   line-height: 1.1;
 }
 
+/* Дата рождения */
 .person-birthdate {
   font-weight: normal;
-  font-size: 11px;
+  font-size: 12px;
   color: #444;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 /* Вертикальная линия от пары к детям */
@@ -81,8 +82,8 @@
 .children {
   display: flex;
   justify-content: center;
-  gap: 25px; /* уменьшенный gap между детьми */
-  margin-top: 12px;
+  gap: 30px;
+  margin-top: 15px;
   position: relative;
 }
 
@@ -98,3 +99,18 @@
   transform: translateX(-50%);
   z-index: 0;
 }
+
+/* Цвета по уровням для визуального различия поколений */
+.person-container.level-0 > .couple > .person {
+  background-color: #cce5ff;
+}
+
+.person-container.level-1 > .couple > .person {
+  background-color: #d4edda;
+}
+
+.person-container.level-2 > .couple > .person {
+  background-color: #fff3cd;
+}
+
+/* Можно добавить больше уровней, если нужно */
