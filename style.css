@@ -1,27 +1,63 @@
 #tree {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+  position: relative;
   font-family: Arial, sans-serif;
-  padding: 20px;
 }
 
 .person-container {
-  margin-left: 20px;
-  margin-top: 10px;
-  border-left: 2px solid #ccc;
-  padding-left: 10px;
+  text-align: center;
+  position: relative;
+  padding-top: 20px;
 }
 
 .couple {
   display: flex;
-  gap: 10px;
-  font-weight: bold;
+  justify-content: center;
+  gap: 20px;
+  position: relative;
 }
 
 .person {
-  padding: 5px 10px;
-  background: #eef;
-  border-radius: 5px;
+  background-color: #eef;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin: 5px;
+  border: 2px solid #88a;
+  font-weight: bold;
+  position: relative;
+  z-index: 1;
 }
 
+/* Горизонтальная линия между мужем и женой */
+.couple::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #aaa;
+  z-index: 0;
+}
+
+/* Вертикальная линия от пары к детям */
+.person-container > .children::before {
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  width: 2px;
+  height: 20px;
+  background: #aaa;
+}
+
+/* Дети на одной линии */
 .children {
-  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 30px;
+  position: relative;
 }
