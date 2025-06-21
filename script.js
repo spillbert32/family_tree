@@ -1,87 +1,74 @@
+// Загружаем данные и строим дерево с использованием связей по id
+
 fetch('data.json')
-  .then(res => res.json())
-  .then(data => {
-    const peopleById = {};
-    data.forEach(person => {
-      peopleById[person.id] = person;
-      person.children = [];
-    });
+  .then((res) => res.json())
+  .then((data) => {
+    // Создаём карту id → человек
+    const peopleMap = new Map();
+    data.forEach(person => peopleMap.set(person.id, person));
 
-    // Связываем детей с родителями
-    data.forEach(person => {
-      if (person.parents) {
-        person.parents.forEach(parentId => {
-          const parent = peopleById[parentId];
-          if (parent) parent.children.push(person);
-        });
-      }
-    });
-
-    const usedIds = new Set();
-
-    // Создаём блок с ФИО и датой рождения, учитывая девичью фамилию
-    function createPersonBlock(person) {
-      const personDiv = document.createElement('div');
-      personDiv.className = 'person';
-
-      const parts = [];
-      if (person.surname) {
-        if (person.maidenSurname) {
-          parts.push(`${person.surname} (${person.maidenSurname})`);
-        } else {
-          parts.push(person.surname);
-        }
-      }
-      if (person.name) parts.push(person.name);
-      if (person.patronymic) parts.push(person.patronymic);
-
-      const fullName = document.createElement('div');
-      fullName.textContent = parts.join(' ');
-      fullName.className = 'person-name';
-
-      const birthdate = document.createElement('div');
-      birthdate.textContent = person.birthdate || '';
-      birthdate.className = 'person-birthdate';
-
-      personDiv.appendChild(fullName);
-      if (birthdate.textContent) {
-        personDiv.appendChild(birthdate);
-      }
-
-      return personDiv;
-    }
-
-    // Создаём узел дерева, помечая использованных людей
-    function createTreeNodeWithMark(person) {
-      usedIds.add(person.id);
-      if (person.spouseId) usedIds.add(person.spouseId);
+    // Создаём функцию построения узла с учетом уровня (для цветов)
+    function createTreeNode(id, level = 0) {
+      const person = peopleMap.get(id);
+      if (!person) return null;
 
       const container = document.createElement('div');
       container.className = 'person-container';
+      container.classList.add(`level-${level}`);
 
-      const couple = document.createElement('div');
-      couple.className = 'couple';
+      // Создаем блок пары, если есть супруг
+      const coupleDiv = document.createElement('div');
+      coupleDiv.className = 'couple';
 
-      const personDiv = createPersonBlock(person);
-      couple.appendChild(personDiv);
+      // Функция создания блока человека
+      function createPersonBlock(p) {
+        const div = document.createElement('div');
+        div.className = 'person';
 
+        // Имя и отчество + фамилия
+        const nameLine = document.createElement('div');
+        nameLine.className = 'person-name';
+
+        // Формируем ФИО с девичьей фамилией в скобках для замужних женщин
+        let fullName = p.firstName + ' ' + p.patronymic + ' ' + p.lastName;
+        if (p.maidenName) {
+          fullName += ` (девичья ${p.maidenName})`;
+        }
+        nameLine.textContent = fullName;
+        div.appendChild(nameLine);
+
+        // Дата рождения
+        if (p.birthDate) {
+          const birthLine = document.createElement('div');
+          birthLine.className = 'person-birthdate';
+          birthLine.textContent = 'Дата рождения: ' + p.birthDate;
+          div.appendChild(birthLine);
+        }
+
+        return div;
+      }
+
+      // Добавляем главного человека
+      coupleDiv.appendChild(createPersonBlock(person));
+
+      // Добавляем супругу, если есть
       if (person.spouseId) {
-        const spouse = peopleById[person.spouseId];
+        const spouse = peopleMap.get(person.spouseId);
         if (spouse) {
-          const spouseDiv = createPersonBlock(spouse);
-          couple.appendChild(spouseDiv);
+          coupleDiv.appendChild(createPersonBlock(spouse));
         }
       }
 
-      container.appendChild(couple);
+      container.appendChild(coupleDiv);
 
-      if (person.children && person.children.length > 0) {
+      // Добавляем детей, если есть
+      if (person.childrenIds && person.childrenIds.length > 0) {
         const childrenDiv = document.createElement('div');
         childrenDiv.className = 'children';
 
-        person.children.forEach(child => {
-          const childNode = createTreeNodeWithMark(child);
-          childrenDiv.appendChild(childNode);
+        person.childrenIds.forEach(childId => {
+          const childNode = createTreeNode(childId, level + 1);
+          if (childNode) childrenDiv.appendChild(childNode);
         });
 
         container.appendChild(childrenDiv);
@@ -90,14 +77,18 @@ fetch('data.json')
       return container;
     }
 
-    // Находим корневых (без родителей)
-    const roots = data.filter(person => (!person.parents || person.parents.length === 0));
-
-    const treeContainer = document.getElementById('tree');
-    roots.forEach(root => {
-      if (!usedIds.has(root.id)) {
-        const node = createTreeNodeWithMark(root);
-        treeContainer.appendChild(node);
-      }
+    // Поиск корня — человека без родителей (не встречается как ребенок)
+    const allIds = new Set(data.map(p => p.id));
+    const childIds = new Set();
+    data.forEach(p => {
+      if (p.childrenIds) p.childrenIds.forEach(cId => childIds.add(cId));
     });
+    const rootCandidates = [...allIds].filter(id => !childIds.has(id));
+    const rootId = rootCandidates.length > 0 ? rootCandidates[0] : data[0].id;
+
+    // Отрисовка
+    const treeContainer = document.getElementById('tree');
+    treeContainer.innerHTML = '';
+    const treeRoot = createTreeNode(rootId, 0);
+    treeContainer.appendChild(treeRoot);
   });
