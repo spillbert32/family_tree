@@ -10,7 +10,7 @@
 /* Контейнер семьи */
 .person-container {
   position: relative;
-  margin-top: 40px; /* больше пространства для линий */
+  margin-top: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -37,7 +37,7 @@
   z-index: 0;
 }
 
-/* Человек */
+/* Каждый человек */
 .person {
   background-color: #eef;
   border-radius: 6px;
@@ -53,12 +53,11 @@
   display: flex;
   justify-content: center;
   gap: 50px;
-  margin-top: 40px; /* отступ от родителей */
+  margin-top: 40px;
   position: relative;
-  padding-top: 40px; /* пространство для линий */
 }
 
-/* Вертикальная линия от центра родителей вниз */
+/* Вертикальная линия вниз от центра пары к линии детей */
 .person-container > .children::before {
   content: '';
   position: absolute;
@@ -71,7 +70,7 @@
   z-index: 0;
 }
 
-/* Горизонтальная линия между детьми */
+/* Горизонтальная линия, соединяющая детей */
 .children::after {
   content: '';
   position: absolute;
@@ -83,11 +82,11 @@
   z-index: 0;
 }
 
-/* Вертикальные линии от каждого ребёнка к горизонтальной линии */
+/* Для каждого ребёнка рисуем вертикальную линию от него к линии соединения детей */
 .children > .person-container::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: -40px;
   left: 50%;
   width: 2px;
   height: 40px;
