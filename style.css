@@ -1,0 +1,37 @@
+ul {
+  list-style-type: none;
+  padding-left: 20px;
+  border-left: 1px solid #ccc;
+}
+
+li {
+  margin: 5px 0;
+  cursor: pointer;
+  position: relative;
+}
+
+li::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: -10px;
+  width: 10px;
+  height: 1px;
+  background: #ccc;
+}
+
+li span.name {
+  user-select: none;
+}
+
+li.collapsed > ul {
+  display: none;
+}
+
+.male {
+  color: blue;
+}
+
+.female {
+  color: darkred;
+}
