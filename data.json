@@ -1,71 +1,69 @@
 [
   {
     "id": 1,
-    "name": "Иван",
+    "firstName": "Иван",
     "patronymic": "Петрович",
-    "surname": "Петров",
-    "birthdate": "15.03.1940",
-    "spouseId": 2
+    "lastName": "Петров",
+    "birthDate": "12.05.1950",
+    "spouseId": 2,
+    "childrenIds": [3, 6]
   },
   {
     "id": 2,
-    "name": "Мария",
+    "firstName": "Мария",
     "patronymic": "Ивановна",
-    "surname": "Смирнова",
-    "maidenSurname": "Иванова",
-    "birthdate": "22.07.1945",
-    "spouseId": 1
+    "lastName": "Иванова",
+    "maidenName": "Смирнова",
+    "birthDate": "23.07.1952",
+    "spouseId": 1,
+    "childrenIds": [3, 6]
   },
   {
     "id": 3,
-    "name": "Алексей",
+    "firstName": "Алексей",
     "patronymic": "Иванович",
-    "surname": "Петров",
-    "birthdate": "05.09.1965",
+    "lastName": "Петров",
+    "birthDate": "15.03.1975",
     "spouseId": 4,
-    "parents": [1, 2]
+    "childrenIds": [5, 7]
   },
   {
     "id": 4,
-    "name": "Елена",
+    "firstName": "Елена",
     "patronymic": "Алексеевна",
-    "surname": "Васильева",
-    "maidenSurname": "Кузнецова",
-    "birthdate": "11.11.1967",
-    "spouseId": 3
+    "lastName": "Алексеевна",
+    "maidenName": "Кузнецова",
+    "birthDate": "20.08.1977",
+    "spouseId": 3,
+    "childrenIds": [5, 7]
   },
   {
     "id": 5,
-    "name": "Сергей",
+    "firstName": "Сергей",
     "patronymic": "Алексеевич",
-    "surname": "Петров",
-    "birthdate": "20.01.1990",
-    "parents": [3, 4]
+    "lastName": "Петров",
+    "birthDate": "01.06.2000"
   },
   {
     "id": 6,
-    "name": "Анна",
-    "patronymic": "Алексеевна",
-    "surname": "Петрова",
-    "birthdate": "14.06.1993",
-    "parents": [3, 4]
+    "firstName": "Ольга",
+    "patronymic": "Ивановна",
+    "lastName": "Петрова",
+    "birthDate": "30.12.1980",
+    "spouseId": 8
   },
   {
     "id": 7,
-    "name": "Ольга",
-    "patronymic": "Ивановна",
-    "surname": "Петрова",
-    "maidenSurname": "Соколова",
-    "birthdate": "03.03.1970",
-    "spouseId": 8,
-    "parents": [1, 2]
+    "firstName": "Анна",
+    "patronymic": "Алексеевна",
+    "lastName": "Петрова",
+    "birthDate": "12.11.2003"
   },
   {
     "id": 8,
-    "name": "Николай",
-    "patronymic": "Сидорович",
-    "surname": "Сидоров",
-    "birthdate": "27.08.1968",
-    "spouseId": 7
+    "firstName": "Николай",
+    "patronymic": "Сергеевич",
+    "lastName": "Сидоров",
+    "birthDate": "10.01.1979"
   }
 ]
