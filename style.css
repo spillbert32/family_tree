@@ -1,22 +1,24 @@
 #tree {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
   margin-top: 50px;
   font-family: Arial, sans-serif;
+  flex-direction: column;
+  align-items: center;
   position: relative;
 }
 
-/* Контейнер семьи */
+/* Контейнер одной семьи */
 .person-container {
   position: relative;
   margin-top: 40px;
+  padding-top: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Пара — муж и жена */
+/* Горизонтальная линия от родителей */
 .couple {
   display: flex;
   gap: 30px;
@@ -24,7 +26,7 @@
   padding: 0 20px;
 }
 
-/* Горизонтальная линия между супругами */
+/* Горизонтальная линия между мужем и женой */
 .couple::before {
   content: '';
   position: absolute;
@@ -33,8 +35,8 @@
   right: 0;
   height: 2px;
   background: #666;
-  transform: translateY(-50%);
   z-index: 0;
+  transform: translateY(-50%);
 }
 
 /* Каждый человек */
@@ -46,6 +48,7 @@
   font-weight: bold;
   position: relative;
   z-index: 1;
+  white-space: nowrap;
 }
 
 /* Контейнер детей */
@@ -53,28 +56,29 @@
   display: flex;
   justify-content: center;
   gap: 50px;
-  margin-top: 40px;
+  margin-top: 30px;
   position: relative;
+  padding-top: 30px; /* Добавлено пространство сверху для линии */
 }
 
-/* Вертикальная линия вниз от центра пары к линии детей */
+/* Вертикальная линия от пары к детям */
 .person-container > .children::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 50%;
+  top: 100%;           /* Начинается сразу под родительским блоком */
+  left: 50%;           /* По центру по горизонтали */
   width: 2px;
-  height: 40px;
+  height: 30px;        /* Высота вертикальной линии */
   background: #666;
   transform: translateX(-50%);
   z-index: 0;
 }
 
 /* Горизонтальная линия, соединяющая детей */
-.children::after {
+.children::before {
   content: '';
   position: absolute;
-  top: 40px;
+  top: 0;              /* В начале контейнера детей */
   left: 0;
   right: 0;
   height: 2px;
@@ -82,14 +86,14 @@
   z-index: 0;
 }
 
-/* Для каждого ребёнка рисуем вертикальную линию от него к линии соединения детей */
+/* Вертикальные линии от детей к родительской линии */
 .children > .person-container::before {
   content: '';
   position: absolute;
-  top: -40px;
-  left: 50%;
+  top: 0;              /* От верхнего края контейнера ребёнка */
+  left: 50%;           /* По центру по горизонтали */
   width: 2px;
-  height: 40px;
+  height: 30px;        /* Высота линии вверх */
   background: #666;
   transform: translateX(-50%);
   z-index: 0;
