@@ -8,32 +8,22 @@
   position: relative;
 }
 
+/* Контейнер одной семьи */
 .person-container {
   position: relative;
   margin-top: 20px;
   padding-top: 20px;
-  border-left: 2px solid #aaa;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* Горизонтальная линия от родителей */
 .couple {
   display: flex;
-  justify-content: center;
-  gap: 20px;
+  gap: 30px;
   position: relative;
-}
-
-.person {
-  background-color: #eef;
-  border-radius: 6px;
-  padding: 10px 15px;
-  margin: 0 5px;
-  border: 2px solid #88a;
-  font-weight: bold;
-  position: relative;
-  z-index: 1;
+  padding: 0 20px;
 }
 
 /* Горизонтальная линия между мужем и женой */
@@ -44,8 +34,19 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: #aaa;
+  background: #666;
   z-index: 0;
+}
+
+/* Каждый человек */
+.person {
+  background-color: #eef;
+  border-radius: 6px;
+  padding: 10px 20px;
+  border: 2px solid #4488cc;
+  font-weight: bold;
+  position: relative;
+  z-index: 1;
 }
 
 /* Вертикальная линия от пары к детям */
@@ -54,17 +55,31 @@
   position: absolute;
   top: 0;
   left: 50%;
-  transform: translateX(-50%);
   width: 2px;
   height: 20px;
-  background: #aaa;
+  background: #666;
+  transform: translateX(-50%);
   z-index: 0;
 }
 
+/* Контейнер детей */
 .children {
   display: flex;
   justify-content: center;
-  gap: 40px;
-  margin-top: 30px;
+  gap: 50px;
+  margin-top: 20px;
   position: relative;
+}
+
+/* Вертикальные линии от детей к родительской линии */
+.children > .person-container::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  width: 2px;
+  height: 20px;
+  background: #666;
+  transform: translateX(-50%);
+  z-index: 0;
 }
