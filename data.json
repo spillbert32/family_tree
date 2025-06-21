@@ -11,7 +11,8 @@
     "id": 2,
     "name": "Мария",
     "patronymic": "Ивановна",
-    "surname": "Петрова",
+    "surname": "Смирнова",
+    "maidenSurname": "Иванова",
     "birthdate": "22.07.1945",
     "spouseId": 1
   },
@@ -28,7 +29,8 @@
     "id": 4,
     "name": "Елена",
     "patronymic": "Алексеевна",
-    "surname": "Петрова",
+    "surname": "Васильева",
+    "maidenSurname": "Кузнецова",
     "birthdate": "11.11.1967",
     "spouseId": 3
   },
@@ -53,6 +55,7 @@
     "name": "Ольга",
     "patronymic": "Ивановна",
     "surname": "Петрова",
+    "maidenSurname": "Соколова",
     "birthdate": "03.03.1970",
     "spouseId": 8,
     "parents": [1, 2]
