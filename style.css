@@ -1,29 +1,33 @@
 #tree {
   display: flex;
   justify-content: center;
-  margin-top: 50px;
+  margin-top: 30px;
   font-family: Arial, sans-serif;
   flex-direction: column;
   align-items: center;
   position: relative;
+  font-size: 14px; /* чуть меньше шрифт */
 }
 
+/* Контейнер одной семьи */
 .person-container {
   position: relative;
-  margin-top: 40px;
-  padding-top: 20px;
+  margin-top: 12px; /* уменьшенный отступ сверху */
+  padding-top: 12px; /* уменьшенный padding */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* Горизонтальная линия от родителей */
 .couple {
   display: flex;
-  gap: 30px;
+  gap: 15px; /* уменьшенный gap между супругами */
   position: relative;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 
+/* Горизонтальная линия между мужем и женой */
 .couple::before {
   content: '';
   position: absolute;
@@ -33,71 +37,63 @@
   height: 2px;
   background: #666;
   z-index: 0;
-  transform: translateY(-50%);
 }
 
+/* Каждый человек */
 .person {
   background-color: #eef;
-  border-radius: 6px;
-  padding: 10px 20px;
+  border-radius: 5px;
+  padding: 6px 12px; /* уменьшенный padding */
   border: 2px solid #4488cc;
   font-weight: bold;
   position: relative;
   z-index: 1;
-  white-space: nowrap;
-  text-align: center;
+  white-space: nowrap; /* чтобы ФИО не переносилось */
+  font-size: 13px; /* чуть меньше */
 }
 
+/* Имя и дата отдельно для более компактного расположения */
 .person-name {
-  font-weight: bold;
-  font-size: 1.1em;
+  line-height: 1.1;
 }
 
 .person-birthdate {
-  font-size: 0.85em;
-  color: #555;
-  margin-top: 4px;
+  font-weight: normal;
+  font-size: 11px;
+  color: #444;
+  margin-top: 2px;
 }
 
-.children {
-  display: flex;
-  justify-content: center;
-  gap: 50px;
-  margin-top: 30px;
-  position: relative;
-  padding-top: 30px;
-}
-
+/* Вертикальная линия от пары к детям */
 .person-container > .children::before {
   content: '';
   position: absolute;
-  top: 100%;
+  top: 0;
   left: 50%;
   width: 2px;
-  height: 30px;
+  height: 20px;
   background: #666;
   transform: translateX(-50%);
   z-index: 0;
 }
 
-.children::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #666;
-  z-index: 0;
+/* Контейнер детей */
+.children {
+  display: flex;
+  justify-content: center;
+  gap: 25px; /* уменьшенный gap между детьми */
+  margin-top: 12px;
+  position: relative;
 }
 
+/* Вертикальные линии от детей к родительской линии */
 .children > .person-container::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: -20px;
   left: 50%;
   width: 2px;
-  height: 30px;
+  height: 20px;
   background: #666;
   transform: translateX(-50%);
   z-index: 0;
