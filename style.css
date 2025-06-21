@@ -12,15 +12,21 @@ body {
   font-size: 14px;
 }
 
-/* Узел семьи */
+/* Контейнер семьи */
 .person-container {
-  position: relative; /* важно для кнопки и линий */
+  position: relative;
   margin-top: 30px;
   padding-top: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
   min-width: 180px;
+
+  background-color: #f0f4ff;  /* светло-голубой фон */
+  border: 1.5px solid #aac2ff; /* мягкая синяя рамка */
+  border-radius: 12px;
+  padding: 20px 15px 30px 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 /* Пара супругов */
@@ -51,7 +57,7 @@ body {
   padding: 6px 8px;
   border: 2px solid #4488cc;
   border-radius: 6px;
-  background: #eef3ff;
+  background: #dbe9ff; /* чуть более насыщенный светлый фон */
   text-align: center;
   font-weight: bold;
   position: relative;
@@ -112,11 +118,10 @@ body {
 }
 
 /* Кнопка раскрытия */
-/* Переносим кнопку в область .couple, чтобы она не съезжала */
 .person-container > .toggle-btn {
   position: absolute;
-  top: 0; /* у верхнего края контейнера */
-  right: 0; /* справа в пределах контейнера */
+  top: 0;
+  right: 0;
   width: 24px;
   height: 24px;
   background: #4488cc;
