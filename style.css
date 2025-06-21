@@ -1,9 +1,63 @@
+body {
+  font-family: Arial, sans-serif;
+  user-select: none;
+}
+
+#tree {
+  max-width: 1200px;
+  margin: 20px auto;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column; /* Дерево строится сверху вниз */
+  align-items: center;
+}
+
+/* Контейнер семьи */
+.person-container {
+  flex-shrink: 0;
+  min-width: 220px; /* Сделал шире для более комфортного текста */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin-top: 30px;
+  padding-top: 30px;
+  background-color: #f0f4ff;  /* светло-голубой фон */
+  border: 1.5px solid #aac2ff; /* мягкая синяя рамка */
+  border-radius: 12px;
+  padding: 20px 15px 30px 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Пара супругов */
+.couple {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  position: relative;
+  min-width: 180px;
+}
+
+/* Линия между супругами */
+.couple::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #666;
+  transform: translateY(-50%);
+  z-index: 0;
+}
+
+/* Карточка с человеком */
 .person {
-  width: 200px; /* увеличена ширина */
+  width: 200px; /* шире, чтобы не было обрезания */
   padding: 6px 8px;
   border: 2px solid #4488cc;
   border-radius: 6px;
-  background: #dbe9ff;
+  background: #dbe9ff; /* чуть более насыщенный светлый фон */
   text-align: center;
   font-weight: bold;
   position: relative;
@@ -14,10 +68,71 @@
   cursor: default;
 }
 
-.toggle-btn {
+/* Девичья фамилия */
+.person .maiden-name {
+  font-style: italic;
+  font-weight: normal;
+  color: #666;
+  font-size: 0.85em;
+}
+
+/* Отчество на новой строке */
+.person .patronymic {
+  font-weight: normal;
+  font-size: 0.9em;
+  color: #333;
+  margin-top: 2px;
+}
+
+/* Дата рождения */
+.person .birth-date {
+  font-weight: normal;
+  font-size: 0.85em;
+  margin-top: 3px;
+  color: #555;
+}
+
+/* Потомки (дети) — горизонтальный flex контейнер */
+.children {
+  display: flex;
+  flex-direction: row;
+  gap: 40px;
+  margin-top: 30px;
+  position: relative;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+/* Вертикальные линии */
+.person-container > .children::before {
+  content: '';
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 25px;
+  background: #666;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+.children > .person-container::before {
+  content: '';
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  width: 2px;
+  height: 25px;
+  background: #666;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+/* Кнопка раскрытия */
+.person-container > .toggle-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 24px;
   height: 24px;
   background: #4488cc;
@@ -33,22 +148,7 @@
   transform: translate(50%, -50%);
 }
 
+/* Скрытые дети */
 .children.hidden {
   display: none;
-}
-
-/* При необходимости поправить позиционирование .person-container, чтобы кнопка не съезжала */
-.person-container {
-  position: relative;
-  margin-top: 30px;
-  padding-top: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 220px; /* чуть больше, чем .person, чтобы кнопка помещалась */
-  background-color: #f0f4ff;
-  border: 1.5px solid #aac2ff;
-  border-radius: 12px;
-  padding: 20px 15px 30px 15px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
