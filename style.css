@@ -1,4 +1,3 @@
-/* Родительский контейнер */
 #tree {
   display: flex;
   flex-direction: column;
@@ -8,16 +7,16 @@
   position: relative;
 }
 
-/* Контейнер одной семьи */
+/* Контейнер семьи */
 .person-container {
   position: relative;
-  margin-top: 20px;
+  margin-top: 40px; /* больше пространства для линий */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Горизонтальная линия между мужем и женой */
+/* Пара — муж и жена */
 .couple {
   display: flex;
   gap: 30px;
@@ -25,7 +24,7 @@
   padding: 0 20px;
 }
 
-/* Линия между мужем и женой */
+/* Горизонтальная линия между супругами */
 .couple::before {
   content: '';
   position: absolute;
@@ -38,7 +37,7 @@
   z-index: 0;
 }
 
-/* Каждый человек */
+/* Человек */
 .person {
   background-color: #eef;
   border-radius: 6px;
@@ -54,29 +53,29 @@
   display: flex;
   justify-content: center;
   gap: 50px;
-  margin-top: 20px;
+  margin-top: 40px; /* отступ от родителей */
   position: relative;
-  padding-top: 20px; /* Добавим отступ сверху для линии */
+  padding-top: 40px; /* пространство для линий */
 }
 
-/* Вертикальная линия от родителей к линии между детьми */
+/* Вертикальная линия от центра родителей вниз */
 .person-container > .children::before {
   content: '';
   position: absolute;
   top: 0;
   left: 50%;
   width: 2px;
-  height: 20px;
+  height: 40px;
   background: #666;
   transform: translateX(-50%);
   z-index: 0;
 }
 
-/* Горизонтальная линия, которая соединяет детей */
+/* Горизонтальная линия между детьми */
 .children::after {
   content: '';
   position: absolute;
-  top: 20px; /* Выше линии от родителей */
+  top: 40px;
   left: 0;
   right: 0;
   height: 2px;
@@ -84,14 +83,14 @@
   z-index: 0;
 }
 
-/* Вертикальные линии от детей к этой горизонтальной линии */
+/* Вертикальные линии от каждого ребёнка к горизонтальной линии */
 .children > .person-container::before {
   content: '';
   position: absolute;
-  top: -20px;
+  top: 0;
   left: 50%;
   width: 2px;
-  height: 20px;
+  height: 40px;
   background: #666;
   transform: translateX(-50%);
   z-index: 0;
