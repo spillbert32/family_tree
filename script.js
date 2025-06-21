@@ -17,13 +17,56 @@ fetch('data.json')
       }
     });
 
-    // Находим корневых предков (без родителей)
-    const roots = data.filter(person => !person.parents || person.parents.length === 0);
+    const usedIds = new Set();
+
+    // Функция, которая строит дерево и помечает использованных
+    function createTreeNodeWithMark(person) {
+      usedIds.add(person.id);
+      if (person.spouseId) usedIds.add(person.spouseId);
+
+      const container = document.createElement('div');
+      container.className = 'person-container';
+
+      const couple = document.createElement('div');
+      couple.className = 'couple';
+
+      const personDiv = createPersonBlock(person);
+      couple.appendChild(personDiv);
+
+      if (person.spouseId) {
+        const spouse = peopleById[person.spouseId];
+        if (spouse) {
+          const spouseDiv = createPersonBlock(spouse);
+          couple.appendChild(spouseDiv);
+        }
+      }
+
+      container.appendChild(couple);
+
+      if (person.children && person.children.length > 0) {
+        const childrenDiv = document.createElement('div');
+        childrenDiv.className = 'children';
+
+        person.children.forEach(child => {
+          const childNode = createTreeNodeWithMark(child);
+          childrenDiv.appendChild(childNode);
+        });
+
+        container.appendChild(childrenDiv);
+      }
+
+      return container;
+    }
+
+    // Находим корневых предков (без родителей), исключая уже использованных (супругов)
+    const roots = data.filter(person => (!person.parents || person.parents.length === 0));
 
     const treeContainer = document.getElementById('tree');
     roots.forEach(root => {
-      const node = createTreeNode(root, peopleById);
-      treeContainer.appendChild(node);
+      if (!usedIds.has(root.id)) {
+        const node = createTreeNodeWithMark(root);
+        treeContainer.appendChild(node);
+      }
     });
   });
 
@@ -46,40 +89,4 @@ function createPersonBlock(person) {
   }
 
   return personDiv;
-}
-
-// Рекурсивное создание дерева
-function createTreeNode(person, peopleById) {
-  const container = document.createElement('div');
-  container.className = 'person-container';
-
-  const couple = document.createElement('div');
-  couple.className = 'couple';
-
-  const personDiv = createPersonBlock(person);
-  couple.appendChild(personDiv);
-
-  if (person.spouseId) {
-    const spouse = peopleById[person.spouseId];
-    if (spouse) {
-      const spouseDiv = createPersonBlock(spouse);
-      couple.appendChild(spouseDiv);
-    }
-  }
-
-  container.appendChild(couple);
-
-  if (person.children && person.children.length > 0) {
-    const childrenDiv = document.createElement('div');
-    childrenDiv.className = 'children';
-
-    person.children.forEach(child => {
-      const childNode = createTreeNode(child, peopleById);
-      childrenDiv.appendChild(childNode);
-    });
-
-    container.appendChild(childrenDiv);
-  }
-
-  return container;
 }
