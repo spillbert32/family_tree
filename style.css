@@ -8,17 +8,15 @@
   position: relative;
 }
 
-/* Контейнер одной семьи */
 .person-container {
   position: relative;
-  margin-top: 20px;
+  margin-top: 40px;
   padding-top: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Пара (муж и жена) */
 .couple {
   display: flex;
   gap: 30px;
@@ -26,7 +24,18 @@
   padding: 0 20px;
 }
 
-/* Каждый человек */
+.couple::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #666;
+  z-index: 0;
+  transform: translateY(-50%);
+}
+
 .person {
   background-color: #eef;
   border-radius: 6px;
@@ -36,14 +45,60 @@
   position: relative;
   z-index: 1;
   white-space: nowrap;
+  text-align: center;
 }
 
-/* Контейнер детей */
+.person-name {
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.person-birthdate {
+  font-size: 0.85em;
+  color: #555;
+  margin-top: 4px;
+}
+
 .children {
   display: flex;
   justify-content: center;
   gap: 50px;
-  margin-top: 20px;
+  margin-top: 30px;
   position: relative;
-  padding-top: 0; /* убрал padding для линий */
+  padding-top: 30px;
+}
+
+.person-container > .children::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 2px;
+  height: 30px;
+  background: #666;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+.children::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #666;
+  z-index: 0;
+}
+
+.children > .person-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 30px;
+  background: #666;
+  transform: translateX(-50%);
+  z-index: 0;
 }
