@@ -1,22 +1,27 @@
-ul {
-  list-style: none;
-  padding-left: 20px;
+#tree {
+  font-family: Arial, sans-serif;
+  padding: 20px;
 }
 
-.node {
-  background: #e0e0e0;
+.person-container {
+  margin-left: 20px;
+  margin-top: 10px;
+  border-left: 2px solid #ccc;
+  padding-left: 10px;
+}
+
+.couple {
+  display: flex;
+  gap: 10px;
+  font-weight: bold;
+}
+
+.person {
   padding: 5px 10px;
-  margin: 5px;
+  background: #eef;
   border-radius: 5px;
-  display: inline-block;
-  border: 1px solid #aaa;
-  cursor: pointer;
 }
 
 .children {
-  margin-left: 20px;
-}
-
-.hidden {
-  display: none;
+  margin-top: 10px;
 }
