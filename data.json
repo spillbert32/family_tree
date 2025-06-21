@@ -109,5 +109,122 @@
     "patronymic": "Алексеевич",
     "lastName": "Сидоров",
     "birthDate": "12.04.1982"
+  },
+
+  // Добавленные новые поколения и родственники:
+  {
+    "id": 14,
+    "firstName": "Владимир",
+    "patronymic": "Петрович",
+    "lastName": "Петров",
+    "birthDate": "17.09.1948",
+    "spouseId": 15,
+    "childrenIds": [16]
+  },
+  {
+    "id": 15,
+    "firstName": "Наталья",
+    "patronymic": "Владимировна",
+    "lastName": "Петрова",
+    "maidenName": "Козлова",
+    "birthDate": "22.03.1950",
+    "spouseId": 14,
+    "childrenIds": [16]
+  },
+  {
+    "id": 16,
+    "firstName": "Дмитрий",
+    "patronymic": "Владимирович",
+    "lastName": "Петров",
+    "birthDate": "11.11.1975",
+    "spouseId": 17,
+    "childrenIds": [18, 19]
+  },
+  {
+    "id": 17,
+    "firstName": "Ирина",
+    "patronymic": "Анатольевна",
+    "lastName": "Петрова",
+    "maidenName": "Соколова",
+    "birthDate": "05.08.1977",
+    "spouseId": 16,
+    "childrenIds": [18, 19]
+  },
+  {
+    "id": 18,
+    "firstName": "Екатерина",
+    "patronymic": "Дмитриевна",
+    "lastName": "Петрова",
+    "birthDate": "14.02.2000"
+  },
+  {
+    "id": 19,
+    "firstName": "Александр",
+    "patronymic": "Дмитриевич",
+    "lastName": "Петров",
+    "birthDate": "21.06.2003"
+  },
+  {
+    "id": 20,
+    "firstName": "Виктор",
+    "patronymic": "Сергеевич",
+    "lastName": "Сидоров",
+    "birthDate": "02.10.1955",
+    "spouseId": 21,
+    "childrenIds": [22, 23]
+  },
+  {
+    "id": 21,
+    "firstName": "Ольга",
+    "patronymic": "Викторовна",
+    "lastName": "Сидорова",
+    "maidenName": "Михайлова",
+    "birthDate": "08.04.1957",
+    "spouseId": 20,
+    "childrenIds": [22, 23]
+  },
+  {
+    "id": 22,
+    "firstName": "Марина",
+    "patronymic": "Викторовна",
+    "lastName": "Сидорова",
+    "birthDate": "15.07.1980",
+    "spouseId": 24
+  },
+  {
+    "id": 23,
+    "firstName": "Андрей",
+    "patronymic": "Викторович",
+    "lastName": "Сидоров",
+    "birthDate": "19.12.1982"
+  },
+  {
+    "id": 24,
+    "firstName": "Константин",
+    "patronymic": "Андреевич",
+    "lastName": "Новиков",
+    "birthDate": "10.11.1979",
+    "spouseId": 22
+  },
+
+  // Добавлены ещё старшие поколения для углубления:
+  {
+    "id": 25,
+    "firstName": "Иван",
+    "patronymic": "Петрович",
+    "lastName": "Петров",
+    "birthDate": "01.01.1890",
+    "spouseId": 26,
+    "childrenIds": [1, 14]
+  },
+  {
+    "id": 26,
+    "firstName": "Екатерина",
+    "patronymic": "Ивановна",
+    "lastName": "Петрова",
+    "maidenName": "Гусева",
+    "birthDate": "12.06.1893",
+    "spouseId": 25,
+    "childrenIds": [1, 14]
   }
 ]
