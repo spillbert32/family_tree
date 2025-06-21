@@ -1,18 +1,60 @@
-{
-  "name": "Иван Петров",
-  "spouse": "Мария Иванова",
-  "children": [
-    {
-      "name": "Алексей Петров",
-      "spouse": "Елена Алексеевна",
-      "children": [
-        { "name": "Сергей Алексеевич" },
-        { "name": "Анна Алексеевна" }
-      ]
-    },
-    {
-      "name": "Ольга Петрова",
-      "spouse": "Николай Сидоров"
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "name": "Иван",
+    "patronymic": "Петрович",
+    "birthdate": "1940",
+    "spouseId": 2
+  },
+  {
+    "id": 2,
+    "name": "Мария",
+    "patronymic": "Ивановна",
+    "birthdate": "1945",
+    "spouseId": 1
+  },
+  {
+    "id": 3,
+    "name": "Алексей",
+    "patronymic": "Иванович",
+    "birthdate": "1965",
+    "spouseId": 4,
+    "parents": [1, 2]
+  },
+  {
+    "id": 4,
+    "name": "Елена",
+    "patronymic": "Алексеевна",
+    "birthdate": "1967",
+    "spouseId": 3
+  },
+  {
+    "id": 5,
+    "name": "Сергей",
+    "patronymic": "Алексеевич",
+    "birthdate": "1990",
+    "parents": [3, 4]
+  },
+  {
+    "id": 6,
+    "name": "Анна",
+    "patronymic": "Алексеевна",
+    "birthdate": "1993",
+    "parents": [3, 4]
+  },
+  {
+    "id": 7,
+    "name": "Ольга",
+    "patronymic": "Ивановна",
+    "birthdate": "1970",
+    "spouseId": 8,
+    "parents": [1, 2]
+  },
+  {
+    "id": 8,
+    "name": "Николай",
+    "patronymic": "Сидорович",
+    "birthdate": "1968",
+    "spouseId": 7
+  }
+]
