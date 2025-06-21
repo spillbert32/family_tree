@@ -68,15 +68,24 @@ body {
   cursor: default;
 }
 
-.maiden-name {
+/* Девичья фамилия */
+.person .maiden-name {
   font-style: italic;
   font-weight: normal;
   color: #666;
-  margin-left: 4px;
   font-size: 0.85em;
 }
 
-.birth-date {
+/* Отчество на новой строке */
+.person .patronymic {
+  font-weight: normal;
+  font-size: 0.9em;
+  color: #333;
+  margin-top: 2px;
+}
+
+/* Дата рождения */
+.person .birth-date {
   font-weight: normal;
   font-size: 0.85em;
   margin-top: 3px;
