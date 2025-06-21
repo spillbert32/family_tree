@@ -3,21 +3,24 @@
     "id": 1,
     "name": "Иван",
     "patronymic": "Петрович",
-    "birthdate": "1940",
+    "surname": "Петров",
+    "birthdate": "15.03.1940",
     "spouseId": 2
   },
   {
     "id": 2,
     "name": "Мария",
     "patronymic": "Ивановна",
-    "birthdate": "1945",
+    "surname": "Петрова",
+    "birthdate": "22.07.1945",
     "spouseId": 1
   },
   {
     "id": 3,
     "name": "Алексей",
     "patronymic": "Иванович",
-    "birthdate": "1965",
+    "surname": "Петров",
+    "birthdate": "05.09.1965",
     "spouseId": 4,
     "parents": [1, 2]
   },
@@ -25,28 +28,32 @@
     "id": 4,
     "name": "Елена",
     "patronymic": "Алексеевна",
-    "birthdate": "1967",
+    "surname": "Петрова",
+    "birthdate": "11.11.1967",
     "spouseId": 3
   },
   {
     "id": 5,
     "name": "Сергей",
     "patronymic": "Алексеевич",
-    "birthdate": "1990",
+    "surname": "Петров",
+    "birthdate": "20.01.1990",
     "parents": [3, 4]
   },
   {
     "id": 6,
     "name": "Анна",
     "patronymic": "Алексеевна",
-    "birthdate": "1993",
+    "surname": "Петрова",
+    "birthdate": "14.06.1993",
     "parents": [3, 4]
   },
   {
     "id": 7,
     "name": "Ольга",
     "patronymic": "Ивановна",
-    "birthdate": "1970",
+    "surname": "Петрова",
+    "birthdate": "03.03.1970",
     "spouseId": 8,
     "parents": [1, 2]
   },
@@ -54,7 +61,8 @@
     "id": 8,
     "name": "Николай",
     "patronymic": "Сидорович",
-    "birthdate": "1968",
+    "surname": "Сидоров",
+    "birthdate": "27.08.1968",
     "spouseId": 7
   }
 ]
