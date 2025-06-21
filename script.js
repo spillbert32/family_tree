@@ -68,7 +68,8 @@ function createTreeNode(person, peopleMap) {
       }
     };
 
-    container.appendChild(toggleBtn);
+    // Вставляем кнопку перед .couple, чтобы позиционирование было корректным
+    container.insertBefore(toggleBtn, couple);
   }
 
   return container;
@@ -81,7 +82,7 @@ fetch('data.json')
     const peopleMap = new Map();
     data.forEach(p => peopleMap.set(p.id, p));
 
-    // Ищем корня - того, кто не является чьим-либо ребенком
+    // Ищем корня - человека, который не является ребёнком никого
     const allIds = new Set(data.map(p => p.id));
     const childIds = new Set();
     data.forEach(p => {
