@@ -2,14 +2,20 @@
   display: flex;
   justify-content: center;
   margin-top: 50px;
-  position: relative;
   font-family: Arial, sans-serif;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
 }
 
 .person-container {
-  text-align: center;
   position: relative;
+  margin-top: 20px;
   padding-top: 20px;
+  border-left: 2px solid #aaa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .couple {
@@ -23,7 +29,7 @@
   background-color: #eef;
   border-radius: 6px;
   padding: 10px 15px;
-  margin: 5px;
+  margin: 0 5px;
   border: 2px solid #88a;
   font-weight: bold;
   position: relative;
@@ -46,18 +52,19 @@
 .person-container > .children::before {
   content: '';
   position: absolute;
-  top: 40px;
+  top: 0;
   left: 50%;
+  transform: translateX(-50%);
   width: 2px;
   height: 20px;
   background: #aaa;
+  z-index: 0;
 }
 
-/* Дети на одной линии */
 .children {
   display: flex;
   justify-content: center;
-  gap: 30px;
+  gap: 40px;
   margin-top: 30px;
   position: relative;
 }
