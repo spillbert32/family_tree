@@ -11,32 +11,19 @@
 /* Контейнер одной семьи */
 .person-container {
   position: relative;
-  margin-top: 40px;
+  margin-top: 20px;
   padding-top: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Горизонтальная линия от родителей */
+/* Пара (муж и жена) */
 .couple {
   display: flex;
   gap: 30px;
   position: relative;
   padding: 0 20px;
-}
-
-/* Горизонтальная линия между мужем и женой */
-.couple::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #666;
-  z-index: 0;
-  transform: translateY(-50%);
 }
 
 /* Каждый человек */
@@ -56,45 +43,7 @@
   display: flex;
   justify-content: center;
   gap: 50px;
-  margin-top: 30px;
+  margin-top: 20px;
   position: relative;
-  padding-top: 30px; /* Добавлено пространство сверху для линии */
-}
-
-/* Вертикальная линия от пары к детям */
-.person-container > .children::before {
-  content: '';
-  position: absolute;
-  top: 100%;           /* Начинается сразу под родительским блоком */
-  left: 50%;           /* По центру по горизонтали */
-  width: 2px;
-  height: 30px;        /* Высота вертикальной линии */
-  background: #666;
-  transform: translateX(-50%);
-  z-index: 0;
-}
-
-/* Горизонтальная линия, соединяющая детей */
-.children::before {
-  content: '';
-  position: absolute;
-  top: 0;              /* В начале контейнера детей */
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #666;
-  z-index: 0;
-}
-
-/* Вертикальные линии от детей к родительской линии */
-.children > .person-container::before {
-  content: '';
-  position: absolute;
-  top: 0;              /* От верхнего края контейнера ребёнка */
-  left: 50%;           /* По центру по горизонтали */
-  width: 2px;
-  height: 30px;        /* Высота линии вверх */
-  background: #666;
-  transform: translateX(-50%);
-  z-index: 0;
+  padding-top: 0; /* убрал padding для линий */
 }
