@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо — без дублирования</title>
+  <title>Родовое древо — без дублирования с детьми</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; overflow: hidden; }
@@ -12,6 +12,7 @@
     .female { fill: #f1948a; }
     text { font-size: 12px; user-select: none; }
     .surname { font-weight: bold; }
+    .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
   </style>
 </head>
 <body>
@@ -27,7 +28,7 @@
       const pairsMap = new Map();
 
       people.forEach(p => {
-        if (p.spouses) {
+        if (p.spouses && p.spouses.length) {
           p.spouses.forEach(spId => {
             const key = [p.id, spId].sort().join("_");
             if (!pairsMap.has(key))
@@ -60,8 +61,19 @@
       });
 
       const used = new Set();
+
       function buildNode(key) {
-        if (used.has(key)) return null;
+        if (used.has(key)) {
+          // Уже строили этот узел — показываем как ссылку без детей, чтобы избежать пропадания
+          const pair = pairsMap.get(key);
+          if (!pair) return null;
+          return {
+            id: key,
+            spouses: pair.spouses.map(id => personMap.get(id)),
+            children: null, // children null — значит не разворачиваем дальше
+            isReference: true
+          };
+        }
         used.add(key);
         const pair = pairsMap.get(key);
         if (!pair) return null;
@@ -75,7 +87,8 @@
               const childKey = [...new Set([ch.id, ...spIds])].sort().join("_");
               return buildNode(childKey);
             })
-            .filter(n => n)
+            .filter(n => n),
+          isReference: false
         };
       }
 
@@ -85,60 +98,116 @@
 
     function render(treeData) {
       const svg = d3.select("svg");
+      svg.selectAll("*").remove();
       const g = svg.append("g").attr("transform", "translate(100,50)");
 
-      svg.call(d3.zoom().scaleExtent([0.5,3]).on("zoom", e => g.attr("transform", e.transform)));
+      svg.call(d3.zoom().scaleExtent([0.5, 3]).on("zoom", e => g.attr("transform", e.transform)));
 
-      const dx = 300, dy = 300, spouseSpacing = 100, circleRadius = 24;
+      const dx = 300,
+        dy = 300,
+        spouseSpacing = 100,
+        circleRadius = 24;
 
       treeData.forEach((rootData, i) => {
         const root = d3.hierarchy(rootData, d => d.children);
         d3.tree().nodeSize([dx, dy])(root);
-        const xOff = i * 800;
+        const xOff = i * 900;
 
-        g.selectAll(".link"+i)
-         .data(root.links())
-         .join("path")
-         .attr("class","link")
-         .attr("d", d3.linkVertical().x(d=>d.x + xOff).y(d=>d.y));
+        g.selectAll(".link" + i)
+          .data(root.links())
+          .join("path")
+          .attr("class", d =>
+            d.target.data.isReference ? "link link-dashed" : "link"
+          )
+          .attr("d", d3.linkVertical().x(d => d.x + xOff).y(d => d.y));
 
-        const nodes = g.selectAll(".node"+i)
+        const nodes = g
+          .selectAll(".node" + i)
           .data(root.descendants())
           .join("g")
-          .attr("class","node")
+          .attr("class", "node")
           .attr("transform", d => `translate(${d.x + xOff},${d.y})`);
 
-        nodes.each(function(d) {
-          const el = d3.select(this), sp = d.data.spouses;
+        nodes.each(function (d) {
+          const el = d3.select(this),
+            sp = d.data.spouses;
+
           const surnameDisplay = person => {
-            if (person.gender==="female" && person.spouses?.length>0 && person.maidenSurname && person.maidenSurname!==person.surname)
+            if (
+              person.gender === "female" &&
+              person.spouses?.length > 0 &&
+              person.maidenSurname &&
+              person.maidenSurname !== person.surname
+            )
               return `${person.surname} (дев. ${person.maidenSurname})`;
             return person.surname;
           };
-          const addText = (x,y,lines) => {
-            lines.forEach((ln,idx)=>{
-              el.append("text")
-                .attr("x",x).attr("y",y+idx*14)
-                .attr("text-anchor","middle").text(ln);
+
+          const addText = (x, y, lines) => {
+            lines.forEach((ln, idx) => {
+              el
+                .append("text")
+                .attr("x", x)
+                .attr("y", y + idx * 14)
+                .attr("text-anchor", "middle")
+                .text(ln);
             });
           };
 
-          if (sp.length===2) {
-            const [a,b] = sp;
-            el.append("circle").attr("class",a.gender==="male"?"male":"female").attr("r",circleRadius).attr("cx",-spouseSpacing/2);
-            el.append("circle").attr("class",b.gender==="male"?"male":"female").attr("r",circleRadius).attr("cx",spouseSpacing/2);
+          if (sp.length === 2) {
+            const [a, b] = sp;
+            el
+              .append("circle")
+              .attr("class", a.gender === "male" ? "male" : "female")
+              .attr("r", circleRadius)
+              .attr("cx", -spouseSpacing / 2);
+            el
+              .append("circle")
+              .attr("class", b.gender === "male" ? "male" : "female")
+              .attr("r", circleRadius)
+              .attr("cx", spouseSpacing / 2);
 
-            el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("text-anchor","middle")
+            el
+              .append("text")
+              .attr("class", "surname")
+              .attr("y", -circleRadius - 14)
+              .attr("text-anchor", "middle")
               .text(surnameDisplay(a));
 
-            addText(-spouseSpacing/2, circleRadius+16, [`${a.name} ${a.patronymic||""}`.trim()]);
-            addText(spouseSpacing/2, circleRadius+16, [`${b.name} ${b.patronymic||""}`.trim()]);
+            addText(
+              -spouseSpacing / 2,
+              circleRadius + 16,
+              [`${a.name} ${a.patronymic || ""}`.trim()]
+            );
+            addText(
+              spouseSpacing / 2,
+              circleRadius + 16,
+              [`${b.name} ${b.patronymic || ""}`.trim()]
+            );
           } else {
             const a = sp[0];
-            el.append("circle").attr("class",a.gender==="male"?"male":"female").attr("r",circleRadius);
-            el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("text-anchor","middle")
+            el
+              .append("circle")
+              .attr("class", a.gender === "male" ? "male" : "female")
+              .attr("r", circleRadius);
+            el
+              .append("text")
+              .attr("class", "surname")
+              .attr("y", -circleRadius - 14)
+              .attr("text-anchor", "middle")
               .text(surnameDisplay(a));
-            addText(0, circleRadius+16, [`${a.name} ${a.patronymic||""}`.trim()]);
+            addText(0, circleRadius + 16, [`${a.name} ${a.patronymic || ""}`.trim()]);
+          }
+
+          if (d.data.isReference) {
+            // Добавляем пометку, что это ссылка на уже отображённого человека
+            el
+              .append("text")
+              .attr("y", circleRadius + 36)
+              .attr("text-anchor", "middle")
+              .attr("fill", "#888")
+              .attr("font-style", "italic")
+              .text("(уже отображено)");
           }
         });
       });
