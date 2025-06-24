@@ -12,5 +12,7 @@
     { "id": "p10", "name": "Полина", "surname": "Мариничева", "patronymic": "Олеговна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["p5", "p6"] },
     { "id": "p11", "name": "Арсений", "surname": "Мариничев", "patronymic": "Дмитриевич", "birthYear": 2007, "gender": "male", "spouses": [], "parents": ["p7", "p8"] },
     { "id": "p12", "name": "Виктория", "surname": "Мариничева", "patronymic": "Дмитриевна", "birthYear": 2010, "gender": "female", "spouses": [], "parents": ["p7", "p8"] }
+    { "id": "p13", "name": "Евгений", "surname": "Мариничев", "patronymic": "Заполнить", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["p3", "p4"] }
+    { "id": "p14", "name": "Иван", "surname": "Кулаков", "patronymic": "Заполнить", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["p3", "p4"] }
   ]
 }
