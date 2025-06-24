@@ -1,7 +1,7 @@
-<html lang="ru">Add commentMore actions
+<!DOCTYPE html>
+<html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо — без дублирования с детьми</title>
   <title>Родовое древо с двумя строками для имени и отчества</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
@@ -13,177 +13,187 @@
     .female { fill: #f1948a; }
     text { font-size: 12px; user-select: none; }
     .surname { font-weight: bold; }
-    .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
   </style>
 </head>
 <body>
-@@ -21,7 +21,7 @@
+  <svg width="100%" height="100%">
+    <g transform="translate(50,50)"></g>
+  </svg>
+  <script>
     fetch("db.json")
       .then(res => res.json())
       .then(data => buildTree(data.people))
-      .catch(err => console.error(err));
       .catch(err => console.error("Ошибка загрузки db.json:", err));
 
     function buildTree(people) {
       const personMap = new Map(people.map(p => [p.id, p]));
-@@ -54,6 +54,7 @@
+      const used = new Set();
+      const pairsMap = new Map();
+
+      people.forEach(p => {
+        (p.spouses || []).forEach(sid => {
+          const ids = [p.id, sid].sort();
+          const key = ids.join("-");
+          if (!pairsMap.has(key)) {
+            pairsMap.set(key, { spouses: ids, children: [] });
+          }
+        });
+      });
+
+      people.forEach(p => {
+        if (!p.parents || p.parents.length !== 2) return;
+        const key = p.parents.sort().join("-");
+        const pair = pairsMap.get(key);
+        if (pair) pair.children.push(p.id);
+      });
+
+      function hasParents(id) {
+        const pp = personMap.get(id);
         return pp?.parents?.length > 0;
       }
 
-      // Корни — пары, где хотя бы один супруг без родителей
       const roots = [];
       pairsMap.forEach((pair, key) => {
-        if (pair.spouses.some(id => !hasParents(id)))
-@@ -64,13 +65,13 @@
+        if (pair.spouses.some(id => !hasParents(id))) {
+          roots.push(buildNode(key));
+        }
+      });
 
       function buildNode(key) {
         if (used.has(key)) {
-          // Уже строили этот узел — показываем как ссылку без детей, чтобы избежать пропадания
-          // Уже построен — рисуем только ссылку без детей, чтобы не дублировать
           const pair = pairsMap.get(key);
           if (!pair) return null;
           return {
             id: key,
             spouses: pair.spouses.map(id => personMap.get(id)),
-            children: null, // children null — значит не разворачиваем дальше
             children: null,
             isReference: true
           };
         }
-@@ -105,14 +106,15 @@
+
+        used.add(key);
+        const pair = pairsMap.get(key);
+        if (!pair) return null;
+
+        return {
+          id: key,
+          spouses: pair.spouses.map(id => personMap.get(id)),
+          children: pair.children
+            .map(id => {
+              const child = personMap.get(id);
+              if (!child || !child.spouses || !child.spouses.length) return null;
+              const spouseId = child.spouses[0];
+              const childKey = [child.id, spouseId].sort().join("-");
+              return buildNode(childKey);
+            })
+            .filter(Boolean)
+        };
+      }
+
+      const svg = d3.select("svg");
+      const g = svg.select("g");
 
       const dx = 300,
-        dy = 300,
-        spouseSpacing = 100,
-        circleRadius = 24;
-        spouseSpacing = 120,
-        circleRadius = 28;
+            dy = 300,
+            spouseSpacing = 120,
+            circleRadius = 28;
 
-      treeData.forEach((rootData, i) => {
+      roots.forEach((rootData, i) => {
         const root = d3.hierarchy(rootData, d => d.children);
         d3.tree().nodeSize([dx, dy])(root);
         const xOff = i * 900;
 
-        // Связи (родитель-ребёнок)
+        // Линии
         g.selectAll(".link" + i)
           .data(root.links())
           .join("path")
-@@ -121,6 +123,7 @@
-          )
+          .attr("class", "link")
           .attr("d", d3.linkVertical().x(d => d.x + xOff).y(d => d.y));
 
         // Узлы
-        const nodes = g
-          .selectAll(".node" + i)
+        g.selectAll(".node" + i)
           .data(root.descendants())
-@@ -143,17 +146,6 @@
-            return person.surname;
-          };
+          .join("g")
+          .attr("class", "node")
+          .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
+          .each(function(d) {
+            const el = d3.select(this);
+            const sp = d.data.spouses;
 
-          const addText = (x, y, lines) => {
-            lines.forEach((ln, idx) => {
-              el
-                .append("text")
-                .attr("x", x)
-                .attr("y", y + idx * 14)
-                .attr("text-anchor", "middle")
-                .text(ln);
+            sp.forEach((person, idx) => {
+              el.append("circle")
+                .attr("cx", idx === 0 ? -spouseSpacing / 2 : spouseSpacing / 2)
+                .attr("r", circleRadius)
+                .attr("class", person.gender === "male" ? "male" : "female");
             });
-          };
 
-          if (sp.length === 2) {
-            const [a, b] = sp;
-            el
-@@ -174,16 +166,45 @@
-              .attr("text-anchor", "middle")
-              .text(surnameDisplay(a));
+            const surnameDisplay = person => person.surname;
 
-            addText(
-              -spouseSpacing / 2,
-              circleRadius + 16,
-              [`${a.name} ${a.patronymic || ""}`.trim()]
-            );
-            addText(
-              spouseSpacing / 2,
-              circleRadius + 16,
-              [`${b.name} ${b.patronymic || ""}`.trim()]
-            );
-            // Имя и отчество у a — 2 строки
-            el
-              .append("text")
-              .attr("x", -spouseSpacing / 2)
-              .attr("y", circleRadius + 14)
-              .attr("text-anchor", "middle")
-              .text(a.name);
-            if (a.patronymic) {
-              el
-                .append("text")
+            if (sp.length === 2) {
+              const [a, b] = sp;
+
+              el.append("text")
+                .attr("class", "surname")
+                .attr("y", -circleRadius - 14)
                 .attr("x", -spouseSpacing / 2)
-                .attr("y", circleRadius + 28)
                 .attr("text-anchor", "middle")
-                .text(a.patronymic);
-            }
+                .text(surnameDisplay(a));
 
-            el
-              .append("text")
-              .attr("class", "surname")
-              .attr("y", -circleRadius - 14)
-              .attr("x", spouseSpacing / 2)
-              .attr("text-anchor", "middle")
-              .text(surnameDisplay(b));
-
-            // Имя и отчество у b — 2 строки
-            el
-              .append("text")
-              .attr("x", spouseSpacing / 2)
-              .attr("y", circleRadius + 14)
-              .attr("text-anchor", "middle")
-              .text(b.name);
-            if (b.patronymic) {
-              el
-                .append("text")
+              el.append("text")
+                .attr("class", "surname")
+                .attr("y", -circleRadius - 14)
                 .attr("x", spouseSpacing / 2)
-                .attr("y", circleRadius + 28)
                 .attr("text-anchor", "middle")
-                .text(b.patronymic);
-            }
-          } else {
-            const a = sp[0];
-            el
-@@ -196,22 +217,35 @@
-              .attr("y", -circleRadius - 14)
-              .attr("text-anchor", "middle")
-              .text(surnameDisplay(a));
-            addText(0, circleRadius + 16, [`${a.name} ${a.patronymic || ""}`.trim()]);
-            // Имя и отчество на 2 строки
-            el
-              .append("text")
-              .attr("x", 0)
-              .attr("y", circleRadius + 14)
-              .attr("text-anchor", "middle")
-              .text(a.name);
-            if (a.patronymic) {
-              el
-                .append("text")
-                .attr("x", 0)
-                .attr("y", circleRadius + 28)
-                .attr("text-anchor", "middle")
-                .text(a.patronymic);
-            }
-          }
+                .text(surnameDisplay(b));
 
-          if (d.data.isReference) {
-            // Добавляем пометку, что это ссылка на уже отображённого человека
-            el
-              .append("text")
-              .attr("y", circleRadius + 36)
-              .attr("y", circleRadius + 48)
-              .attr("text-anchor", "middle")
-              .attr("fill", "#888")
-              .attr("font-style", "italic")
-              .text("(уже отображено)");
-          }
-        });
+              [[a, -spouseSpacing / 2], [b, spouseSpacing / 2]].forEach(([person, x]) => {
+                el.append("text")
+                  .attr("x", x)
+                  .attr("y", circleRadius + 14)
+                  .attr("text-anchor", "middle")
+                  .text(person.name);
+                if (person.patronymic) {
+                  el.append("text")
+                    .attr("x", x)
+                    .attr("y", circleRadius + 28)
+                    .attr("text-anchor", "middle")
+                    .text(person.patronymic);
+                }
+              });
+
+            } else if (sp.length === 1) {
+              const a = sp[0];
+
+              el.append("text")
+                .attr("class", "surname")
+                .attr("y", -circleRadius - 14)
+                .attr("x", 0)
+                .attr("text-anchor", "middle")
+                .text(surnameDisplay(a));
+
+              el.append("text")
+                .attr("x", 0)
+                .attr("y", circleRadius + 14)
+                .attr("text-anchor", "middle")
+                .text(a.name);
+              if (a.patronymic) {
+                el.append("text")
+                  .attr("x", 0)
+                  .attr("y", circleRadius + 28)
+                  .attr("text-anchor", "middle")
+                  .text(a.patronymic);
+              }
+            }
+
+            if (d.data.isReference) {
+              el.append("text")
+                .attr("y", circleRadius + 48)
+                .attr("text-anchor", "middle")
+                .attr("fill", "#888")
+                .attr("font-style", "italic")
+                .text("(уже отображено)");
+            }
+          });
       });
     }
   </script>
