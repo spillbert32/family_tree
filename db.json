@@ -1,69 +1,36 @@
-const familyTreeData = {
-  people: [
+{
+  "people": [
     {
-      id: 1,
-      name: "Иван Иванович",
-      gender: "male",
-      birthYear: 1950,
-      deathYear: 2020,
-      parents: [],
-      spouses: [2],
-      children: [3, 4]
+      "id": 1,
+      "name": "Иван",
+      "surname": "Иванов",
+      "gender": "male",
+      "birthYear": 1950,
+      "deathYear": 2020,
+      "parents": [],
+      "spouses": [2],
+      "children": [3, 4]
     },
     {
-      id: 2,
-      name: "Мария Петровна",
-      gender: "female",
-      birthYear: 1952,
-      deathYear: 2015,
-      parents: [],
-      spouses: [1],
-      children: [3, 4]
+      "id": 2,
+      "name": "Мария",
+      "surname": "Петрова",
+      "gender": "female",
+      "birthYear": 1952,
+      "deathYear": 2015,
+      "parents": [],
+      "spouses": [1],
+      "children": [3, 4]
     },
     {
-      id: 3,
-      name: "Сергей Иванович",
-      gender: "male",
-      birthYear: 1980,
-      parents: [1, 2],
-      spouses: [5],
-      children: [6, 7]
-    },
-    {
-      id: 4,
-      name: "Ольга Ивановна",
-      gender: "female",
-      birthYear: 1985,
-      parents: [1, 2],
-      spouses: [],
-      children: []
-    },
-    {
-      id: 5,
-      name: "Елена Смирнова",
-      gender: "female",
-      birthYear: 1982,
-      parents: [],
-      spouses: [3],
-      children: [6, 7]
-    },
-    {
-      id: 6,
-      name: "Дмитрий Сергеевич",
-      gender: "male",
-      birthYear: 2010,
-      parents: [3, 5],
-      spouses: [],
-      children: []
-    },
-    {
-      id: 7,
-      name: "Андрей Сергеевич",
-      gender: "male",
-      birthYear: 2012,
-      parents: [3, 5],
-      spouses: [],
-      children: []
+      "id": 3,
+      "name": "Сергей",
+      "surname": "Иванов",
+      "gender": "male",
+      "birthYear": 1980,
+      "parents": [1, 2],
+      "spouses": [],
+      "children": []
     }
   ]
-};
+}
