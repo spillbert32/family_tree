@@ -1,283 +1,264 @@
-<!DOCTYPE html>Add commentMore actions
+<!DOCTYPE html>More actions
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />Add commentMore actions
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Родовое древо</title>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-  }
-  .node circle {
-    stroke: #666;
-    stroke-width: 2px;
-  }
-  .male {
-    fill: #6baed6;
-  }
-  .female {
-    fill: #fd8d3c;
-  }
-  .link {
-    fill: none;
-    stroke: #999;
-    stroke-width: 2px;
-  }
-  text {
-    font-size: 12px;
-    user-select: none;
-  }
-  text.surname {
-    font-weight: bold;
-    font-size: 14px;
-    dominant-baseline: hanging;
-  }
-  text.maidenSurname {
-    font-style: italic;
-    font-size: 10px;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Родовое древо с двумя строками для имени и отчества</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; overflow: hidden; }
+    .link { fill: none; stroke: #999; stroke-width: 2px; }
+    .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
+    .node circle { stroke: #555; stroke-width: 2px; }
+    .male { fill: #5dade2; }
+    .female { fill: #f1948a; }
+    text { font-size: 12px; user-select: none; }
+    .surname { font-weight: bold; }
+
+  </style>
 </head>
 <body>
-<h1>Родовое древо</h1>Add commentMore actions
-<div id="tree"></div>
+  <svg width="1800" height="1000"></svg>
+  <script>
+    fetch("db.json")
+      .then(res => res.json())
+      .then(data => buildTree(data.people))
+      .catch(err => console.error("Ошибка загрузки db.json:", err));
 
-<script>
-const width = 1400;
-const height = 900;
-const circleRadius = 30;
-const verticalSpacing = 140;
-const horizontalSpacing = 160;
-const spouseSpacing = 80;
+    function buildTree(people) {
+      const personMap = new Map(people.map(p => [p.id, p]));
+      const pairsMap = new Map();
 
-const svg = d3
-  .select("#tree")
-  .append("svg")
-  .attr("width", width)
-  .attr("height", height)
-  .style("border", "1px solid #ccc");
+      people.forEach(p => {
+        if (p.spouses && p.spouses.length) {
+          p.spouses.forEach(spId => {
+            const key = [p.id, spId].sort().join("_");
+            if (!pairsMap.has(key))
+              pairsMap.set(key, { spouses: [p.id, spId], children: [] });
+          });
+        } else {
+          pairsMap.set(p.id, { spouses: [p.id], children: [] });
+        }
+      });
 
-const treeGroup = svg.append("g").attr("transform", "translate(60, 60)");
+      people.forEach(p => {
+        if (p.parents?.length) {
+          const key = [...p.parents].sort().join("_");
+          if (!pairsMap.has(key))
+            pairsMap.set(key, { spouses: [...p.parents], children: [p.id] });
+          else
+            pairsMap.get(key).children.push(p.id);
+        }
+      });
 
-const data = {
-  people: [
-    {"id":"p1","name":"Пётр","surname":"Мариничев","patronymic":"","birthYear":1950,"gender":"male","spouses":["p2"],"parents":[]},
-    {"id":"p2","name":"Галина","surname":"Рыбасова","patronymic":"Александровна","maidenSurname":"Смирнова","birthYear":1953,"gender":"female","spouses":["p1"],"parents":[]},
-    {"id":"p3","name":"Александр","surname":"Мариничев","patronymic":"Петрович","birthYear":1975,"gender":"male","spouses":["p4"],"parents":["p1","p2"]},
-    {"id":"p4","name":"Ольга","surname":"Иванова","patronymic":"Викторовна","maidenSurname":"Кузнецова","birthYear":1978,"gender":"female","spouses":["p3"],"parents":[]},
-    {"id":"p5","name":"Олег","surname":"Мариничев","patronymic":"Петрович","birthYear":1978,"gender":"male","spouses":["p6"],"parents":["p1","p2"]},
-    {"id":"p6","name":"Ирина","surname":"Шаповалова","patronymic":"Сергеевна","maidenSurname":"Лебедева","birthYear":1980,"gender":"female","spouses":["p5"],"parents":[]},
-    {"id":"p7","name":"Дмитрий","surname":"Мариничев","patronymic":"Петрович","birthYear":1983,"gender":"male","spouses":["p8"],"parents":["p1","p2"]},
-    {"id":"p8","name":"Палия","surname":"Соколова","patronymic":"Владимировна","maidenSurname":"Морозова","birthYear":1985,"gender":"female","spouses":["p7"],"parents":[]},
-    {"id":"p9","name":"Владислав","surname":"Мариничев","patronymic":"Олегович","birthYear":2002,"gender":"male","spouses":[],"parents":["p5","p6"]},
-    {"id":"p10","name":"Полина","surname":"Мариничева","patronymic":"Олеговна","birthYear":2006,"gender":"female","spouses":[],"parents":["p5","p6"]},
-    {"id":"p11","name":"Арсений","surname":"Мариничев","patronymic":"Дмитриевич","birthYear":2008,"gender":"male","spouses":[],"parents":["p7","p8"]},
-    {"id":"p12","name":"Виктория","surname":"Мариничева","patronymic":"Дмитриевна","birthYear":2010,"gender":"female","spouses":[],"parents":["p7","p8"]}
-  ]
-};
-
-// Создаем карту людей по id для быстрого доступа
-const peopleById = {};
-data.people.forEach(p => { peopleById[p.id] = p; });
-
-// Создаем структуру дерева, где каждый человек будет содержать детей
-data.people.forEach(person => {
-  person.children = [];
-});
-data.people.forEach(person => {
-  person.parents.forEach(pid => {
-    if (peopleById[pid]) {
-      peopleById[pid].children.push(person.id);
-    }
-  });
-});
-
-// Ищем корней — люди без родителей
-const roots = data.people.filter(p => p.parents.length === 0);
-
-const treeData = roots.map(root => buildTree(root.id));
-// Функция построения поддерева с учётом супругов и детейAdd commentMore actions
-function buildTree(id) {
-  const person = peopleById[id];
-  if (!person) return null;
-
-  // Получаем супругов (у нас максимум 2 — муж и жена)
-  const spouses = person.spouses.filter(sid => peopleById[sid]);
-  // Создаем узел
-  const node = {
-    id: person.id,
-    person,
-    spouses: spouses.map(sid => peopleById[sid]),
-    children: []
-  };
-
-  // Берем детей, чтобы не дублировать
-  const childrenSet = new Set();
-
-  // Дети, у которых этот человек или его супруг(а) являются родителями
-  [person.id, ...spouses.map(s => s.id)].forEach(parentId => {
-    data.people.forEach(child => {
-      if (child.parents.includes(parentId)) {
-        childrenSet.add(child.id);
+      function hasParents(id) {
+        const pp = personMap.get(id);
+        return pp?.parents?.length > 0;
       }
-    });
-  });
 
-  node.children = Array.from(childrenSet).map(cid => buildTree(cid));
+      // Корни — пары, где хотя бы один супруг без родителей
+      const roots = [];
+      pairsMap.forEach((pair, key) => {
+        if (pair.spouses.some(id => !hasParents(id)))
+          roots.push({ key, ...pair });
+      });
 
-  return node;
-}
+      const used = new Set();
 
-// Расположение элементов: сначала мы строим иерархию, потом визуализируем
+      function buildNode(key) {
+        if (used.has(key)) {
+          // Уже построен — рисуем только ссылку без детей, чтобы не дублировать
+          const pair = pairsMap.get(key);
+          if (!pair) return null;
+          return {
+            id: key,
+            spouses: pair.spouses.map(id => personMap.get(id)),
+            children: null,
+            isReference: true
+          };
+        }
+        used.add(key);
+        const pair = pairsMap.get(key);
+        if (!pair) return null;
+        return {
+          id: key,
+          spouses: pair.spouses.map(id => personMap.get(id)),
+          children: pair.children
+            .map(childId => {
+              const ch = personMap.get(childId);
+              const spIds = ch.spouses || [];
+              const childKey = [...new Set([ch.id, ...spIds])].sort().join("_");
+              return buildNode(childKey);
+            })
+            .filter(n => n),
+          isReference: false
+        };
+      }
 
-const rootGroup = treeGroup.append("g");
-
-const treeLayout = d3.tree()
-  .nodeSize([horizontalSpacing, verticalSpacing]);
-
-// Если несколько корней — объединяем их под фиктивным корнем
-const superRoot = { id: "superRoot", children: treeData };
-const rootHierarchy = d3.hierarchy(superRoot, d => d.children);
-
-// Применяем layout
-treeLayout(rootHierarchy);
-
-// Сдвигаем весь рисунок, чтобы убрать фиктивный корень
-const offsetY = verticalSpacing;
-
-rootGroup.attr("transform", `translate(0, ${offsetY})`);
-
-// Рисуем связи между узлами (дети-родители)
-rootGroup.selectAll(".link")
-  .data(rootHierarchy.links())
-  .join("path")
-  .attr("class", "link")
-  .attr("d", d3.linkVertical()
-    .x(d => d.x)
-    .y(d => d.y));
-
-// Отрисовка узлов
-const node = rootGroup.selectAll(".node")
-  .data(rootHierarchy.descendants().filter(d => d.data.id !== "superRoot"))
-  .join("g")
-  .attr("class", "node")
-  .attr("transform", d => `translate(${d.x},${d.y})`);
-
-const circleRadiusInner = circleRadius;
-const spouseSpacingInner = spouseSpacing;
-
-// Функция для вывода фамилии, добавим в при необходимости
-function surnameDisplay(p) {
-  return p.surname;
-}
-
-// Отрисовка человека с супругой или одного человека
-node.each(function(d) {
-  const el = d3.select(this);
-  const sp = d.data.spouses ? d.data.spouses : [];
-  const person = d.data.person;
-
-  if (sp.length === 2) {
-    const [a, b] = sp;
-    // Кружочки супругов
-    el.append("circle")
-      .attr("class", a.gender === "male" ? "male" : "female")
-      .attr("r", circleRadiusInner)
-      .attr("cx", -spouseSpacingInner / 2);
-    el.append("circle")
-      .attr("class", b.gender === "male" ? "male" : "female")
-      .attr("r", circleRadiusInner)
-      .attr("cx", spouseSpacingInner / 2);
-
-    // Фамилии над кружками
-    el.append("text")
-      .attr("class", "surname")
-      .attr("y", -circleRadiusInner - 14)
-      .attr("x", -spouseSpacingInner / 2)
-      .attr("text-anchor", "middle")
-      .text(surnameDisplay(a));
-    el.append("text")
-      .attr("class", "surname")
-      .attr("y", -circleRadiusInner - 14)
-      .attr("x", spouseSpacingInner / 2)
-      .attr("text-anchor", "middle")
-      .text(surnameDisplay(b));
-
-    // Девичья фамилия под кружком
-    if (a.gender === "female" && a.maidenSurname && a.maidenSurname !== a.surname) {
-      el.append("text")
-        .attr("class", "maidenSurname")
-        .attr("x", -spouseSpacingInner / 2)
-        .attr("y", circleRadiusInner + 6)
-        .attr("text-anchor", "middle")
-        .text(`(дев. ${a.maidenSurname})`);
-    }
-    if (b.gender === "female" && b.maidenSurname && b.maidenSurname !== b.surname) {
-      el.append("text")
-        .attr("class", "maidenSurname")
-        .attr("x", spouseSpacingInner / 2)
-        .attr("y", circleRadiusInner + 6)
-        .attr("text-anchor", "middle")
-        .text(`(дев. ${b.maidenSurname})`);
+      const treeData = roots.map(r => buildNode(r.key)).filter(Boolean);
+      render(treeData);
     }
 
-    // Имя и отчество на 2 строки
-    el.append("text")
-      .attr("x", -spouseSpacingInner / 2)
-      .attr("y", circleRadiusInner + 20)
-      .attr("text-anchor", "middle")
-      .text(a.name);
-    if (a.patronymic) {
-      el.append("text")
-        .attr("x", -spouseSpacingInner / 2)
-        .attr("y", circleRadiusInner + 34)
-        .attr("text-anchor", "middle")
-        .text(a.patronymic);
-    }
+    function render(treeData) {
+      const svg = d3.select("svg");
+      svg.selectAll("*").remove();
+      const g = svg.append("g").attr("transform", "translate(100,50)");
 
-    el.append("text")
-      .attr("x", spouseSpacingInner / 2)
-      .attr("y", circleRadiusInner + 20)
-      .attr("text-anchor", "middle")
-      .text(b.name);
-    if (b.patronymic) {
-      el.append("text")
-        .attr("x", spouseSpacingInner / 2)
-        .attr("y", circleRadiusInner + 34)
-        .attr("text-anchor", "middle")
-        .text(b.patronymic);
-    }
-  } else {
-    // Один человек
-    el.append("circle")
-      .attr("class", person.gender === "male" ? "male" : "female")
-      .attr("r", circleRadiusInner);
+      svg.call(d3.zoom().scaleExtent([0.5, 3]).on("zoom", e => g.attr("transform", e.transform)));
 
-    el.append("text")
-      .attr("class", "surname")
-      .attr("y", -circleRadiusInner - 14)
-      .attr("text-anchor", "middle")
-      .text(surnameDisplay(person));
-if (person.gender === "female" && person.maidenSurname && person.maidenSurname !== person.surname) {Add commentMore actions
-      el.append("text")
-        .attr("class", "maidenSurname")
-        .attr("x", 0)
-        .attr("y", circleRadiusInner + 6)
-        .attr("text-anchor", "middle")
-        .text(`(дев. ${person.maidenSurname})`);
+      const dx = 300,
+        dy = 300,
+        spouseSpacing = 120,
+        circleRadius = 28;
+
+      treeData.forEach((rootData, i) => {
+        const root = d3.hierarchy(rootData, d => d.children);
+        d3.tree().nodeSize([dx, dy])(root);
+        const xOff = i * 900;
+
+        // Связи (родитель-ребёнок)
+        g.selectAll(".link" + i)
+          .data(root.links())
+          .join("path")
+          .attr("class", d =>
+            d.target.data.isReference ? "link link-dashed" : "link"
+          )
+          .attr("d", d3.linkVertical().x(d => d.x + xOff).y(d => d.y));
+
+        // Узлы
+        const nodes = g
+          .selectAll(".node" + i)
+          .data(root.descendants())
+          .join("g")
+          .attr("class", "node")
+          .attr("transform", d => `translate(${d.x + xOff},${d.y})`);
+
+        nodes.each(function (d) {
+          const el = d3.select(this),
+            sp = d.data.spouses;
+
+          const surnameDisplay = person => {
+            if (
+              person.gender === "female" &&
+              person.spouses?.length > 0 &&
+              person.maidenSurname &&
+              person.maidenSurname !== person.surname
+            )
+              return `${person.surname} (дев. ${person.maidenSurname})`;
+            return person.surname;
+          };
+
+
+
+
+
+
+
+
+
+
+
+
+          if (sp.length === 2) {
+            const [a, b] = sp;
+            el
+              .append("circle")
+              .attr("class", a.gender === "male" ? "male" : "female")
+              .attr("r", circleRadius)
+              .attr("cx", -spouseSpacing / 2);
+            el
+              .append("circle")
+              .attr("class", b.gender === "male" ? "male" : "female")
+              .attr("r", circleRadius)
+              .attr("cx", spouseSpacing / 2);
+
+            el
+              .append("text")
+              .attr("class", "surname")
+              .attr("y", -circleRadius - 14)
+              .attr("text-anchor", "middle")
+              .text(surnameDisplay(a));
+
+            // Имя и отчество у a — 2 строки
+            el
+              .append("text")
+              .attr("x", -spouseSpacing / 2)
+              .attr("y", circleRadius + 14)
+              .attr("text-anchor", "middle")
+              .text(a.name);
+            if (a.patronymic) {
+              el
+                .append("text")
+                .attr("x", -spouseSpacing / 2)
+                .attr("y", circleRadius + 28)
+                .attr("text-anchor", "middle")
+                .text(a.patronymic);
+            }
+
+            el
+              .append("text")
+              .attr("class", "surname")
+              .attr("y", -circleRadius - 14)
+              .attr("x", spouseSpacing / 2)
+              .attr("text-anchor", "middle")
+              .text(surnameDisplay(b));
+
+            // Имя и отчество у b — 2 строки
+            el
+              .append("text")
+              .attr("x", spouseSpacing / 2)
+              .attr("y", circleRadius + 14)
+              .attr("text-anchor", "middle")
+              .text(b.name);
+            if (b.patronymic) {
+              el
+                .append("text")
+                .attr("x", spouseSpacing / 2)
+                .attr("y", circleRadius + 28)
+                .attr("text-anchor", "middle")
+                .text(b.patronymic);
+            }
+          } else {
+            const a = sp[0];
+            el
+              .append("circle")
+              .attr("class", a.gender === "male" ? "male" : "female")
+              .attr("r", circleRadius);
+            el
+              .append("text")
+              .attr("class", "surname")
+              .attr("y", -circleRadius - 14)
+              .attr("text-anchor", "middle")
+              .text(surnameDisplay(a));
+            // Имя и отчество на 2 строки
+            el
+              .append("text")
+              .attr("x", 0)
+              .attr("y", circleRadius + 14)
+              .attr("text-anchor", "middle")
+              .text(a.name);
+            if (a.patronymic) {
+              el
+                .append("text")
+                .attr("x", 0)
+                .attr("y", circleRadius + 28)
+                .attr("text-anchor", "middle")
+                .text(a.patronymic);
+            }
+          }
+
+          if (d.data.isReference) {
+
+            el
+              .append("text")
+              .attr("y", circleRadius + 48)
+              .attr("text-anchor", "middle")
+              .attr("fill", "#888")
+              .attr("font-style", "italic")
+              .text("(уже отображено)");
+          }
+        });
+      });
     }
- el.append("text")Add commentMore actions
-      .attr("x", 0)
-      .attr("y", circleRadiusInner + 20)
-      .attr("text-anchor", "middle")
-      .text(person.name);
-    if (person.patronymic) {
-      el.append("text")
-        .attr("x", 0)
-        .attr("y", circleRadiusInner + 34)
-        .attr("text-anchor", "middle")
-        .text(person.patronymic);
-    }
-    </body>Add commentMore actions
+  </script>
+</body>
 </html>
