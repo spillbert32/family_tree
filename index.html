@@ -1,8 +1,8 @@
-<!DOCTYPE html>More actions
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо с двумя строками для имени и отчества</title>
+  <title>Родовое древо с девичьей фамилией</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; overflow: hidden; }
@@ -13,7 +13,7 @@
     .female { fill: #f1948a; }
     text { font-size: 12px; user-select: none; }
     .surname { font-weight: bold; }
-
+    .maiden { font-style: italic; font-size: 11px; fill: #666; }
   </style>
 </head>
 <body>
@@ -55,7 +55,6 @@
         return pp?.parents?.length > 0;
       }
 
-      // Корни — пары, где хотя бы один супруг без родителей
       const roots = [];
       pairsMap.forEach((pair, key) => {
         if (pair.spouses.some(id => !hasParents(id)))
@@ -66,7 +65,6 @@
 
       function buildNode(key) {
         if (used.has(key)) {
-          // Уже построен — рисуем только ссылку без детей, чтобы не дублировать
           const pair = pairsMap.get(key);
           if (!pair) return null;
           return {
@@ -115,7 +113,6 @@
         d3.tree().nodeSize([dx, dy])(root);
         const xOff = i * 900;
 
-        // Связи (родитель-ребёнок)
         g.selectAll(".link" + i)
           .data(root.links())
           .join("path")
@@ -124,7 +121,6 @@
           )
           .attr("d", d3.linkVertical().x(d => d.x + xOff).y(d => d.y));
 
-        // Узлы
         const nodes = g
           .selectAll(".node" + i)
           .data(root.descendants())
@@ -143,113 +139,110 @@
               person.maidenSurname &&
               person.maidenSurname !== person.surname
             )
-              return `${person.surname} (дев. ${person.maidenSurname})`;
+              return `${person.surname}`;
             return person.surname;
           };
 
-
-
-
-
-
-
-
-
-
-
+          const addMaiden = (person, x) => {
+            if (
+              person.gender === "female" &&
+              person.spouses?.length > 0 &&
+              person.maidenSurname &&
+              person.maidenSurname !== person.surname
+            ) {
+              el.append("text")
+                .attr("class", "maiden")
+                .attr("x", x)
+                .attr("y", circleRadius + 4)
+                .attr("text-anchor", "middle")
+                .text(`(дев. ${person.maidenSurname})`);
+            }
+          };
 
           if (sp.length === 2) {
             const [a, b] = sp;
-            el
-              .append("circle")
+
+            el.append("circle")
               .attr("class", a.gender === "male" ? "male" : "female")
               .attr("r", circleRadius)
               .attr("cx", -spouseSpacing / 2);
-            el
-              .append("circle")
+            el.append("circle")
               .attr("class", b.gender === "male" ? "male" : "female")
               .attr("r", circleRadius)
               .attr("cx", spouseSpacing / 2);
 
-            el
-              .append("text")
+            el.append("text")
               .attr("class", "surname")
               .attr("y", -circleRadius - 14)
+              .attr("x", -spouseSpacing / 2)
               .attr("text-anchor", "middle")
               .text(surnameDisplay(a));
-
-            // Имя и отчество у a — 2 строки
-            el
-              .append("text")
-              .attr("x", -spouseSpacing / 2)
-              .attr("y", circleRadius + 14)
-              .attr("text-anchor", "middle")
-              .text(a.name);
-            if (a.patronymic) {
-              el
-                .append("text")
-                .attr("x", -spouseSpacing / 2)
-                .attr("y", circleRadius + 28)
-                .attr("text-anchor", "middle")
-                .text(a.patronymic);
-            }
-
-            el
-              .append("text")
+            el.append("text")
               .attr("class", "surname")
               .attr("y", -circleRadius - 14)
               .attr("x", spouseSpacing / 2)
               .attr("text-anchor", "middle")
               .text(surnameDisplay(b));
 
-            // Имя и отчество у b — 2 строки
-            el
-              .append("text")
+            addMaiden(a, -spouseSpacing / 2);
+            addMaiden(b, spouseSpacing / 2);
+
+            el.append("text")
+              .attr("x", -spouseSpacing / 2)
+              .attr("y", circleRadius + 20)
+              .attr("text-anchor", "middle")
+              .text(a.name);
+            if (a.patronymic) {
+              el.append("text")
+                .attr("x", -spouseSpacing / 2)
+                .attr("y", circleRadius + 34)
+                .attr("text-anchor", "middle")
+                .text(a.patronymic);
+            }
+
+            el.append("text")
               .attr("x", spouseSpacing / 2)
-              .attr("y", circleRadius + 14)
+              .attr("y", circleRadius + 20)
               .attr("text-anchor", "middle")
               .text(b.name);
             if (b.patronymic) {
-              el
-                .append("text")
+              el.append("text")
                 .attr("x", spouseSpacing / 2)
-                .attr("y", circleRadius + 28)
+                .attr("y", circleRadius + 34)
                 .attr("text-anchor", "middle")
                 .text(b.patronymic);
             }
+
           } else {
             const a = sp[0];
-            el
-              .append("circle")
+            el.append("circle")
               .attr("class", a.gender === "male" ? "male" : "female")
               .attr("r", circleRadius);
-            el
-              .append("text")
+
+            el.append("text")
               .attr("class", "surname")
               .attr("y", -circleRadius - 14)
               .attr("text-anchor", "middle")
               .text(surnameDisplay(a));
-            // Имя и отчество на 2 строки
-            el
-              .append("text")
+
+            addMaiden(a, 0);
+
+            el.append("text")
               .attr("x", 0)
-              .attr("y", circleRadius + 14)
+              .attr("y", circleRadius + 20)
               .attr("text-anchor", "middle")
               .text(a.name);
             if (a.patronymic) {
-              el
-                .append("text")
+              el.append("text")
                 .attr("x", 0)
-                .attr("y", circleRadius + 28)
+                .attr("y", circleRadius + 34)
                 .attr("text-anchor", "middle")
                 .text(a.patronymic);
             }
           }
 
           if (d.data.isReference) {
-
-            el
-              .append("text")
+            el.append("text")
               .attr("y", circleRadius + 48)
               .attr("text-anchor", "middle")
               .attr("fill", "#888")
