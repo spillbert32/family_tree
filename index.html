@@ -126,9 +126,6 @@
 
       const hierarchyData = d3.hierarchy(treeRoot);
 
-      // Увеличиваем вертикальные отступы для предотвращения наложений
-      // Здесь d3.tree() не даёт напрямую менять отступы,
-      // но мы можем модифицировать позиции вручную после layout:
       treeLayout(hierarchyData);
 
       // Увеличиваем вертикальные отступы, умножая координату X
@@ -137,18 +134,24 @@
         d.x = d.x * levelSeparationFactor;
       });
 
-      // Линии связи (родители - дети) - вертикальные
+      // Линии связи (родители - дети) - исключаем виртуального корня
+      const links = hierarchyData.links()
+        .filter(l => l.source.data.id !== "virtual-root");
+
       svgGroup.selectAll('.link')
-        .data(hierarchyData.links())
+        .data(links)
         .join('path')
         .attr('class', 'link')
         .attr('d', d3.linkVertical()
           .x(d => d.x)
           .y(d => d.y));
 
-      // Узлы
+      // Узлы - исключаем виртуального корня
+      const nodes = hierarchyData.descendants()
+        .filter(d => d.data.id !== "virtual-root");
+
       const node = svgGroup.selectAll('.node')
-        .data(hierarchyData.descendants())
+        .data(nodes)
         .join('g')
         .attr('class', 'node')
         .attr('transform', d => `translate(${d.x},${d.y})`);
