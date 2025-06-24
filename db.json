@@ -1,18 +1,18 @@
 {
   "people": [
-    { "id": "p1", "name": "Пётр", "surname": "Мариничев", "patronymic": "", "birthYear": 1950, "gender": "male", "spouses": ["p2"], "parents": [] },
-    { "id": "p2", "name": "Галина", "surname": "Рыбасова", "maidenSurname": "Куликова", "patronymic": "Александровна", "birthYear": 1953, "gender": "female", "spouses": ["p1"], "parents": [] },
+    { "id": "p1", "name": "Пётр", "surname": "Мариничев", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "male", "spouses": ["p2"], "parents": [] },
+    { "id": "p2", "name": "Галина", "surname": "Мариничева", "maidenSurname": "Рыбасова", "patronymic": "Александровна", "birthYear": 1953, "gender": "female", "spouses": ["p1"], "parents": [] },
     { "id": "p3", "name": "Александр", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1975, "gender": "male", "spouses": ["p4"], "parents": ["p1", "p2"] },
-    { "id": "p4", "name": "Ольга", "surname": "Иванова", "maidenSurname": "Козлова", "patronymic": "Викторовна", "birthYear": 1978, "gender": "female", "spouses": ["p3"], "parents": [] },
+    { "id": "p4", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1978, "gender": "female", "spouses": ["p3"], "parents": [] },
     { "id": "p5", "name": "Олег", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1978, "gender": "male", "spouses": ["p6"], "parents": ["p1", "p2"] },
-    { "id": "p6", "name": "Ирина", "surname": "Шаповалова", "maidenSurname": "Кузнецова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["p5"], "parents": [] },
+    { "id": "p6", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["p5"], "parents": [] },
     { "id": "p7", "name": "Дмитрий", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1983, "gender": "male", "spouses": ["p8"], "parents": ["p1", "p2"] },
-    { "id": "p8", "name": "Палия", "surname": "Соколова", "maidenSurname": "Морозова", "patronymic": "Владимировна", "birthYear": 1985, "gender": "female", "spouses": ["p7"], "parents": [] },
+    { "id": "p8", "name": "Паля", "surname": "Мариничева", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1985, "gender": "female", "spouses": ["p7"], "parents": [] },
     { "id": "p9", "name": "Владислав", "surname": "Мариничев", "patronymic": "Олегович", "birthYear": 2002, "gender": "male", "spouses": [], "parents": ["p5", "p6"] },
     { "id": "p10", "name": "Полина", "surname": "Мариничева", "patronymic": "Олеговна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["p5", "p6"] },
     { "id": "p11", "name": "Арсений", "surname": "Мариничев", "patronymic": "Дмитриевич", "birthYear": 2007, "gender": "male", "spouses": [], "parents": ["p7", "p8"] },
     { "id": "p12", "name": "Виктория", "surname": "Мариничева", "patronymic": "Дмитриевна", "birthYear": 2010, "gender": "female", "spouses": [], "parents": ["p7", "p8"] },
-    { "id": "p13", "name": "Евгений", "surname": "Мариничев", "patronymic": "Заполнить", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["p3", "p4"] },
-    { "id": "p14", "name": "Иван", "surname": "Кулаков", "patronymic": "Заполнить", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["p3", "p4"] }
+    { "id": "p13", "name": "Евгений", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["p3", "p4"] },
+    { "id": "p14", "name": "Иван", "surname": "Кулаков", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["p3", "p4"] }
   ]
 }
