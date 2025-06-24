@@ -7,9 +7,7 @@
       "gender": "male",
       "birthYear": 1950,
       "deathYear": 2020,
-      "parents": [],
-      "spouses": [2],
-      "children": [3, 4]
+      "parents": []
     },
     {
       "id": 2,
@@ -18,19 +16,7 @@
       "gender": "female",
       "birthYear": 1952,
       "deathYear": 2015,
-      "parents": [],
-      "spouses": [1],
-      "children": [3, 4]
-    },
-    {
-      "id": 3,
-      "name": "Сергей",
-      "surname": "Иванов",
-      "gender": "male",
-      "birthYear": 1980,
-      "parents": [1, 2],
-      "spouses": [],
-      "children": []
+      "parents": []
     }
   ]
 }
