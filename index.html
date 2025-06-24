@@ -2,17 +2,21 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо с D3.js</title>
+  <title>Родовое древо для GitHub Pages</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     .node circle {
-      fill: #999;
       stroke: steelblue;
       stroke-width: 3px;
     }
-    .node text {
+    .node text.name {
       font: 14px sans-serif;
       fill: #333;
+      font-weight: bold;
+    }
+    .node text.dates {
+      font: 12px sans-serif;
+      fill: #666;
     }
     .link {
       fill: none;
@@ -26,41 +30,50 @@
 <svg width="960" height="600"></svg>
 
 <script>
+  // Встраиваем данные прямо сюда, чтобы fetch не нужен был
   const data = {
-    name: "Иван Иванович",
-    children: [
+    "name": "Иван Иванович",
+    "gender": "male",
+    "birthYear": 1950,
+    "deathYear": 2020,
+    "children": [
       { 
-        name: "Сергей Иванович",
-        children: [
-          { name: "Дмитрий Сергеевич" },
-          { name: "Андрей Сергеевич" }
+        "name": "Сергей Иванович",
+        "gender": "male",
+        "birthYear": 1980,
+        "children": [
+          { "name": "Дмитрий Сергеевич", "gender": "male", "birthYear": 2010 },
+          { "name": "Андрей Сергеевич", "gender": "male", "birthYear": 2012 }
         ]
       },
       {
-        name: "Ольга Ивановна",
-        children: [
-          { name: "Мария Ольговна" }
+        "name": "Ольга Ивановна",
+        "gender": "female",
+        "birthYear": 1985,
+        "children": [
+          { "name": "Мария Ольговна", "gender": "female", "birthYear": 2015 }
         ]
       }
     ]
   };
 
-  const width = 960;
-  const height = 600;
-
   const svg = d3.select("svg")
-    .attr("width", width)
-    .attr("height", height)
+    .attr("width", 960)
+    .attr("height", 600)
     .append("g")
     .attr("transform", "translate(40,0)");
 
-  const treeLayout = d3.tree().size([height - 100, width - 160]);
+  const treeLayout = d3.tree().size([600 - 100, 960 - 160]);
+
+  function genderColor(gender) {
+    if (gender === "male") return "#1f77b4";
+    if (gender === "female") return "#e377c2";
+    return "#999";
+  }
 
   const root = d3.hierarchy(data);
-
   treeLayout(root);
 
-  // Рисуем связи (линии)
   svg.selectAll('.link')
     .data(root.links())
     .join('path')
@@ -69,7 +82,6 @@
       .x(d => d.y)
       .y(d => d.x));
 
-  // Рисуем узлы
   const node = svg.selectAll('.node')
     .data(root.descendants())
     .join('g')
@@ -77,13 +89,28 @@
     .attr('transform', d => `translate(${d.y},${d.x})`);
 
   node.append('circle')
-    .attr('r', 20);
+    .attr('r', 20)
+    .attr('fill', d => genderColor(d.data.gender))
+    .attr('stroke', 'steelblue')
+    .attr('stroke-width', 3);
 
   node.append('text')
-    .attr('dy', 5)
+    .attr('class', 'name')
+    .attr('dy', -10)
     .attr('x', d => d.children ? -25 : 25)
     .style('text-anchor', d => d.children ? 'end' : 'start')
     .text(d => d.data.name);
+
+  node.append('text')
+    .attr('class', 'dates')
+    .attr('dy', 10)
+    .attr('x', d => d.children ? -25 : 25)
+    .style('text-anchor', d => d.children ? 'end' : 'start')
+    .text(d => {
+      const b = d.data.birthYear ? d.data.birthYear : "?";
+      const dth = d.data.deathYear ? d.data.deathYear : "";
+      return dth ? `${b} - ${dth}` : `р. ${b}`;
+    });
 
 </script>
 
