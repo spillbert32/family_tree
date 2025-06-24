@@ -1,44 +1,90 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Родовое древо</title>
+  <meta charset="UTF-8" />
+  <title>Родовое древо с D3.js</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
-    ul { list-style: none; }
-    .person {
-      border: 1px solid #ccc;
-      margin: 5px;
-      padding: 8px;
-      display: inline-block;
+    .node circle {
+      fill: #999;
+      stroke: steelblue;
+      stroke-width: 3px;
+    }
+    .node text {
+      font: 14px sans-serif;
+      fill: #333;
+    }
+    .link {
+      fill: none;
+      stroke: #555;
+      stroke-width: 2px;
     }
   </style>
 </head>
 <body>
 
-<div id="tree-container"></div>
+<svg width="960" height="600"></svg>
 
 <script>
-const familyData = [
-  { id: 1, name: "Иван Иванович", gender: "male", parents: [], children: [2, 3] },
-  { id: 2, name: "Сергей Иванович", gender: "male", parents: [1], children: [] },
-  { id: 3, name: "Ольга Ивановна", gender: "female", parents: [1], children: [] }
-];
+  const data = {
+    name: "Иван Иванович",
+    children: [
+      { 
+        name: "Сергей Иванович",
+        children: [
+          { name: "Дмитрий Сергеевич" },
+          { name: "Андрей Сергеевич" }
+        ]
+      },
+      {
+        name: "Ольга Ивановна",
+        children: [
+          { name: "Мария Ольговна" }
+        ]
+      }
+    ]
+  };
 
-function buildTree(personId, data) {
-  const person = data.find(p => p.id === personId);
-  if (!person) return '';
+  const width = 960;
+  const height = 600;
 
-  let childrenHtml = '';
-  if (person.children && person.children.length > 0) {
-    childrenHtml = '<ul>' +
-      person.children.map(childId => '<li>' + buildTree(childId, data) + '</li>').join('') +
-      '</ul>';
-  }
+  const svg = d3.select("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .append("g")
+    .attr("transform", "translate(40,0)");
 
-  return `<div class="person">${person.name}</div>${childrenHtml}`;
-}
+  const treeLayout = d3.tree().size([height - 100, width - 160]);
 
-document.getElementById('tree-container').innerHTML = '<ul><li>' + buildTree(1, familyData) + '</li></ul>';
+  const root = d3.hierarchy(data);
+
+  treeLayout(root);
+
+  // Рисуем связи (линии)
+  svg.selectAll('.link')
+    .data(root.links())
+    .join('path')
+    .attr('class', 'link')
+    .attr('d', d3.linkHorizontal()
+      .x(d => d.y)
+      .y(d => d.x));
+
+  // Рисуем узлы
+  const node = svg.selectAll('.node')
+    .data(root.descendants())
+    .join('g')
+    .attr('class', 'node')
+    .attr('transform', d => `translate(${d.y},${d.x})`);
+
+  node.append('circle')
+    .attr('r', 20);
+
+  node.append('text')
+    .attr('dy', 5)
+    .attr('x', d => d.children ? -25 : 25)
+    .style('text-anchor', d => d.children ? 'end' : 'start')
+    .text(d => d.data.name);
+
 </script>
 
 </body>
