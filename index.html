@@ -119,7 +119,7 @@ function buildFamilyTree(people) {
   const treeDataRoots = roots.map(root => buildNode(root.key));
 
   const width = 1400, height = 900;
-  const dx = 140, dy = 240;
+  const dx = 200, dy = 240;
 
   const svg = d3.select("#tree").append("svg")
     .attr("width", width)
@@ -163,7 +163,7 @@ function buildFamilyTree(people) {
       .attr("transform", d => `translate(${d.x + xOffset},${d.y})`);
 
     const circleRadius = 20;
-    const spouseSpacing = 50;
+    const spouseSpacing = 70;
     const maxTextWidth = 100;
 
     node.each(function(d) {
