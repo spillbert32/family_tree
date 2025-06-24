@@ -1,163 +1,44 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<title>Максимальное Родовое Древо</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  .male { color: blue; }
-  .female { color: crimson; }
-  ul { list-style-type: none; padding-left: 20px; }
-  li { margin: 5px 0; cursor: pointer; }
-  .hidden { display: none; }
-  .selected { font-weight: bold; }
-  form { margin-bottom: 20px; }
-  label { display: block; margin-top: 10px; }
-  input, select { width: 200px; padding: 5px; }
-  button { margin-top: 10px; padding: 5px 10px; }
-  #tree { border: 1px solid #ccc; padding: 10px; max-width: 600px; }
-</style>
+  <meta charset="UTF-8">
+  <title>Родовое древо</title>
+  <style>
+    ul { list-style: none; }
+    .person {
+      border: 1px solid #ccc;
+      margin: 5px;
+      padding: 8px;
+      display: inline-block;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Родовое Древо</h1>
-
-<form id="addRelativeForm">
-  <h3>Добавить родственника</h3>
-  <label>Имя:<br>
-    <input type="text" id="name" required>
-  </label>
-  <label>Пол:<br>
-    <select id="gender" required>
-      <option value="male">Мужской</option>
-      <option value="female">Женский</option>
-    </select>
-  </label>
-  <label>Родители (через запятую ID):<br>
-    <input type="text" id="parents" placeholder="например, 1,2">
-  </label>
-  <button type="submit">Добавить</button>
-</form>
-
-<label>Выберите главного человека:</label>
-<select id="mainPersonSelect"></select>
-
-<div>
-  <button onclick="showLineage('male')">Показать мужскую линию</button>
-  <button onclick="showLineage('female')">Показать женскую линию</button>
-  <button onclick="showLineage('all')">Показать всех родственников</button>
-</div>
-
-<div id="tree"></div>
+<div id="tree-container"></div>
 
 <script>
-  // Инициализация семьи (если есть сохранение — загружаем)
-  let family = JSON.parse(localStorage.getItem('family')) || [
-    { id: 1, name: "Иван", gender: "male", parents: [] },
-    { id: 2, name: "Анна", gender: "female", parents: [] },
-    { id: 3, name: "Петр", gender: "male", parents: [1, 2] },
-    { id: 4, name: "Мария", gender: "female", parents: [1, 2] },
-    { id: 5, name: "Алексей", gender: "male", parents: [3] },
-  ];
+const familyData = [
+  { id: 1, name: "Иван Иванович", gender: "male", parents: [], children: [2, 3] },
+  { id: 2, name: "Сергей Иванович", gender: "male", parents: [1], children: [] },
+  { id: 3, name: "Ольга Ивановна", gender: "female", parents: [1], children: [] }
+];
 
-  // Функция сохранить семью в localStorage
-  function saveFamily() {
-    localStorage.setItem('family', JSON.stringify(family));
+function buildTree(personId, data) {
+  const person = data.find(p => p.id === personId);
+  if (!person) return '';
+
+  let childrenHtml = '';
+  if (person.children && person.children.length > 0) {
+    childrenHtml = '<ul>' +
+      person.children.map(childId => '<li>' + buildTree(childId, data) + '</li>').join('') +
+      '</ul>';
   }
 
-  // Обновить селект главного человека
-  function updateMainPersonSelect() {
-    const select = document.getElementById('mainPersonSelect');
-    select.innerHTML = '';
-    family.forEach(p => {
-      const option = document.createElement('option');
-      option.value = p.id;
-      option.textContent = `${p.name} (${p.id})`;
-      select.appendChild(option);
-    });
-  }
+  return `<div class="person">${person.name}</div>${childrenHtml}`;
+}
 
-  // Функция найти потомков человека (у кого этот id в parents)
-  function getChildren(id) {
-    return family.filter(p => p.parents.includes(id));
-  }
-
-  // Функция построения дерева рекурсивно (вниз)
-  function buildTree(personId, genderFilter = 'all') {
-    const person = family.find(p => p.id === personId);
-    if (!person) return null;
-
-    if (genderFilter !== 'all' && person.gender !== genderFilter) {
-      return null; // Фильтруем по полу, если нужно
-    }
-
-    const li = document.createElement('li');
-    li.textContent = person.name + ` (ID: ${person.id})`;
-    li.className = person.gender;
-
-    // Добавим кнопку для разворачивания детей
-    const children = getChildren(person.id).filter(child => genderFilter === 'all' || child.gender === genderFilter);
-    if (children.length > 0) {
-      const ul = document.createElement('ul');
-      children.forEach(child => {
-        const childTree = buildTree(child.id, genderFilter);
-        if (childTree) ul.appendChild(childTree);
-      });
-      li.appendChild(ul);
-    }
-
-    return li;
-  }
-
-  // Отобразить дерево в div#tree
-  function renderTree(mainId, genderFilter = 'all') {
-    const treeDiv = document.getElementById('tree');
-    treeDiv.innerHTML = '';
-
-    const ul = document.createElement('ul');
-    const tree = buildTree(mainId, genderFilter);
-    if (tree) {
-      ul.appendChild(tree);
-    } else {
-      ul.textContent = 'Нет данных для отображения';
-    }
-    treeDiv.appendChild(ul);
-  }
-
-  // Обработчик формы добавления родственника
-  document.getElementById('addRelativeForm').addEventListener('submit', function(e){
-    e.preventDefault();
-
-    const name = document.getElementById('name').value.trim();
-    const gender = document.getElementById('gender').value;
-    const parentsRaw = document.getElementById('parents').value.trim();
-    let parents = [];
-
-    if(parentsRaw) {
-      parents = parentsRaw.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-    }
-
-    const newId = family.length ? Math.max(...family.map(p => p.id)) + 1 : 1;
-
-    family.push({id: newId, name, gender, parents});
-    saveFamily();
-    updateMainPersonSelect();
-    alert(`Добавлен родственник с ID: ${newId}`);
-
-    this.reset();
-  });
-
-  // Функции для кнопок линий
-  function showLineage(gender) {
-    const mainId = parseInt(document.getElementById('mainPersonSelect').value);
-    renderTree(mainId, gender);
-  }
-
-  // Инициализация
-  updateMainPersonSelect();
-  document.getElementById('mainPersonSelect').value = 5;
-  renderTree(5, 'all');
-
+document.getElementById('tree-container').innerHTML = '<ul><li>' + buildTree(1, familyData) + '</li></ul>';
 </script>
 
 </body>
