@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо с зумом и вертикальным расположением</title>
+  <title>Родовое древо с зумом и несколькими корнями</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
@@ -59,7 +59,7 @@
 </head>
 <body>
 
-<h2>Родовое древо с зумом и вертикальным расположением</h2>
+<h2>Родовое древо с зумом и несколькими корнями</h2>
 <svg></svg>
 <div id="tooltip" class="tooltip"></div>
 
@@ -81,7 +81,6 @@
 
   const tooltip = d3.select("#tooltip");
 
-  // Вертикальное дерево - ширина = высота, высота = ширина для удобства
   const treeLayout = d3.tree().size([width - 200, height - 150]);
 
   function genderColor(gender) {
@@ -95,128 +94,111 @@
     .then(familyTreeData => {
       const personMap = new Map(familyTreeData.people.map(p => [p.id, p]));
 
-      // Найдём корней (у кого нет родителей)
+      // Находим корней (у кого нет родителей)
       const roots = familyTreeData.people.filter(p => !p.parents || p.parents.length === 0);
       if (roots.length === 0) {
         console.error("Не найдено корневых предков");
         return;
       }
 
-      // Построение иерархии
-      function buildHierarchy(person) {
-        const node = { ...person, children: [] };
-        const children = familyTreeData.people.filter(p => p.parents?.includes(person.id));
-        node.children = children.map(child => buildHierarchy(child));
-        return node;
-      }
-
-      let treeRoot;
-      if (roots.length > 1) {
-        treeRoot = {
-          id: "virtual-root",
-          name: "Общий предок",
-          surname: "",
-          gender: "",
-          birthYear: "",
-          children: roots.map(root => buildHierarchy(root))
-        };
-      } else {
-        treeRoot = buildHierarchy(roots[0]);
-      }
-
-      const hierarchyData = d3.hierarchy(treeRoot);
-
-      treeLayout(hierarchyData);
-
-      // Увеличиваем вертикальные отступы, умножая координату X
       const levelSeparationFactor = 2.5;
-      hierarchyData.descendants().forEach(d => {
-        d.x = d.x * levelSeparationFactor;
-      });
+      const treeSpacingY = 550; // расстояние между деревьями по вертикали
 
-      // Линии связи (родители - дети) - исключаем виртуального корня
-      const links = hierarchyData.links()
-        .filter(l => l.source.data.id !== "virtual-root");
+      roots.forEach((root, index) => {
+        // Рекурсивно строим иерархию для каждого корня
+        function buildHierarchy(person) {
+          const node = { ...person, children: [] };
+          const children = familyTreeData.people.filter(p => p.parents?.includes(person.id));
+          node.children = children.map(child => buildHierarchy(child));
+          return node;
+        }
 
-      svgGroup.selectAll('.link')
-        .data(links)
-        .join('path')
-        .attr('class', 'link')
-        .attr('d', d3.linkVertical()
-          .x(d => d.x)
-          .y(d => d.y));
+        const treeRoot = buildHierarchy(root);
+        const hierarchyData = d3.hierarchy(treeRoot);
 
-      // Узлы - исключаем виртуального корня
-      const nodes = hierarchyData.descendants()
-        .filter(d => d.data.id !== "virtual-root");
+        treeLayout(hierarchyData);
 
-      const node = svgGroup.selectAll('.node')
-        .data(nodes)
-        .join('g')
-        .attr('class', 'node')
-        .attr('transform', d => `translate(${d.x},${d.y})`);
-
-      node.append('circle')
-        .attr('r', 22)
-        .attr('fill', d => genderColor(d.data.gender))
-        .attr('stroke', 'steelblue')
-        .attr('stroke-width', 3);
-
-      node.append('text')
-        .attr('class', 'name')
-        .attr('dy', -12)
-        .attr('y', d => d.children ? -30 : 30)
-        .style('text-anchor', 'middle')
-        .text(d => `${d.data.name || ""} ${d.data.surname || ""}`);
-
-      node.append('text')
-        .attr('class', 'dates')
-        .attr('dy', 12)
-        .attr('y', d => d.children ? -15 : 45)
-        .style('text-anchor', 'middle')
-        .text(d => {
-          if (!d.data.birthYear) return "";
-          return d.data.deathYear
-            ? `${d.data.birthYear} - ${d.data.deathYear}`
-            : `р. ${d.data.birthYear}`;
+        hierarchyData.descendants().forEach(d => {
+          d.x = d.x * levelSeparationFactor;
+          d.y = d.y + index * treeSpacingY; // смещаем каждое дерево по вертикали
         });
 
-      // Отобразить супругов рядом с каждым узлом справа
-      node.each(function(d) {
-        if (!d.data.spouses) return;
+        // Отрисовка линий связей (родители — дети)
+        svgGroup.selectAll(`.link-root-${index}`)
+          .data(hierarchyData.links())
+          .join('path')
+          .attr('class', `link link-root-${index}`)
+          .attr('d', d3.linkVertical()
+            .x(d => d.x)
+            .y(d => d.y));
 
-        const mainNode = d3.select(this);
-        const spacing = 55; // расстояние от основного круга до кружка супруга
+        // Отрисовка узлов
+        const node = svgGroup.selectAll(`.node-root-${index}`)
+          .data(hierarchyData.descendants())
+          .join('g')
+          .attr('class', `node node-root-${index}`)
+          .attr('transform', d => `translate(${d.x},${d.y})`);
 
-        d.data.spouses.forEach((spouseId, i) => {
-          const spouse = personMap.get(spouseId);
-          if (!spouse) return;
+        node.append('circle')
+          .attr('r', 22)
+          .attr('fill', d => genderColor(d.data.gender))
+          .attr('stroke', 'steelblue')
+          .attr('stroke-width', 3);
 
-          const spouseX = 22 + spacing + i * 45; // справа от основного круга
-          const spouseY = 0;
+        node.append('text')
+          .attr('class', 'name')
+          .attr('dy', -12)
+          .attr('y', d => d.children ? -30 : 30)
+          .style('text-anchor', 'middle')
+          .text(d => `${d.data.name || ""} ${d.data.surname || ""}`);
 
-          // линия к супругу
-          mainNode.append("line")
-            .attr("class", "spouse-link")
-            .attr("x1", 22)  // край основного круга справа
-            .attr("y1", 0)
-            .attr("x2", spouseX - 12) // край кружка супруга слева
-            .attr("y2", spouseY);
+        node.append('text')
+          .attr('class', 'dates')
+          .attr('dy', 12)
+          .attr('y', d => d.children ? -15 : 45)
+          .style('text-anchor', 'middle')
+          .text(d => {
+            if (!d.data.birthYear) return "";
+            return d.data.deathYear
+              ? `${d.data.birthYear} - ${d.data.deathYear}`
+              : `р. ${d.data.birthYear}`;
+          });
 
-          // кружок супруга
-          mainNode.append("circle")
-            .attr("class", "spouse-circle")
-            .attr("r", 12)
-            .attr("cx", spouseX)
-            .attr("cy", spouseY)
-            .attr("fill", genderColor(spouse.gender))
-            .on("mousemove", (event) => {
-              tooltip.style("visibility", "visible")
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 20) + "px")
-                .text(`${spouse.name} ${spouse.surname} (${spouse.gender === "male" ? "муж" : "жена"})`);
-            })
-            .on("mouseout", () => tooltip.style("visibility", "hidden"));
+        // Отрисовка супругов рядом с человеком
+        node.each(function(d) {
+          if (!d.data.spouses) return;
+
+          const mainNode = d3.select(this);
+          const spacing = 55;
+
+          d.data.spouses.forEach((spouseId, i) => {
+            const spouse = personMap.get(spouseId);
+            if (!spouse) return;
+
+            const spouseX = 22 + spacing + i * 45;
+            const spouseY = 0;
+
+            mainNode.append("line")
+              .attr("class", "spouse-link")
+              .attr("x1", 22)
+              .attr("y1", 0)
+              .attr("x2", spouseX - 12)
+              .attr("y2", spouseY);
+
+            mainNode.append("circle")
+              .attr("class", "spouse-circle")
+              .attr("r", 12)
+              .attr("cx", spouseX)
+              .attr("cy", spouseY)
+              .attr("fill", genderColor(spouse.gender))
+              .on("mousemove", (event) => {
+                tooltip.style("visibility", "visible")
+                  .style("left", (event.pageX + 10) + "px")
+                  .style("top", (event.pageY - 20) + "px")
+                  .text(`${spouse.name} ${spouse.surname} (${spouse.gender === "male" ? "муж" : "жена"})`);
+              })
+              .on("mouseout", () => tooltip.style("visibility", "hidden"));
+          });
         });
       });
     })
