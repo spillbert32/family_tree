@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо</title>
+  <title>Родовое древо с супругами</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
@@ -26,17 +26,42 @@
       stroke: #999;
       stroke-width: 2px;
     }
+    .spouse-link {
+      stroke: #555;
+      stroke-width: 1.5px;
+      stroke-dasharray: 4 2;
+    }
+    .spouse-circle {
+      stroke: #999;
+      stroke-width: 2px;
+      cursor: pointer;
+    }
+    .tooltip {
+      position: absolute;
+      background: #eee;
+      padding: 4px 8px;
+      border: 1px solid #666;
+      border-radius: 4px;
+      pointer-events: none;
+      font-size: 14px;
+      color: #222;
+      visibility: hidden;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
 
-<h2>Родовое древо семьи</h2>
+<h2>Родовое древо с супругами</h2>
 <svg width="1500" height="1000"></svg>
+<div id="tooltip" class="tooltip"></div>
 
 <script>
   const svg = d3.select("svg")
     .append("g")
     .attr("transform", "translate(100, 50)");
+
+  const tooltip = d3.select("#tooltip");
 
   const treeLayout = d3.tree().size([900, 1300]); // height, width
 
@@ -51,7 +76,7 @@
     .then(familyTreeData => {
       const personMap = new Map(familyTreeData.people.map(p => [p.id, p]));
 
-      // Найдём корней (тех, у кого нет родителей)
+      // Найдём корней (у кого нет родителей)
       const roots = familyTreeData.people.filter(p => !p.parents || p.parents.length === 0);
       if (roots.length === 0) {
         console.error("Не найдено корневых предков");
@@ -66,7 +91,6 @@
         return node;
       }
 
-      // Если много корней — создадим фиктивный корень
       let treeRoot;
       if (roots.length > 1) {
         treeRoot = {
@@ -84,6 +108,7 @@
       const hierarchyData = d3.hierarchy(treeRoot);
       treeLayout(hierarchyData);
 
+      // Основные линии (родители — дети)
       svg.selectAll('.link')
         .data(hierarchyData.links())
         .join('path')
@@ -92,6 +117,7 @@
           .x(d => d.y)
           .y(d => d.x));
 
+      // Узлы (люди)
       const node = svg.selectAll('.node')
         .data(hierarchyData.descendants())
         .join('g')
@@ -122,6 +148,46 @@
             ? `${d.data.birthYear} - ${d.data.deathYear}`
             : `р. ${d.data.birthYear}`;
         });
+
+      // Отобразить супругов рядом с каждым узлом
+      node.each(function(d) {
+        if (!d.data.spouses) return;
+
+        const mainNode = d3.select(this);
+        const mainX = 0, mainY = 0;
+        const spacing = 55; // расстояние от основного круга до кружка супруга
+
+        d.data.spouses.forEach((spouseId, i) => {
+          const spouse = personMap.get(spouseId);
+          if (!spouse) return;
+
+          const spouseX = spacing + i * 45; // смещение по X вправо
+          const spouseY = 0;
+
+          // линия к супругу
+          mainNode.append("line")
+            .attr("class", "spouse-link")
+            .attr("x1", mainX + 22)  // край основного круга справа
+            .attr("y1", mainY)
+            .attr("x2", spouseX - 12) // край кружка супруга слева
+            .attr("y2", spouseY);
+
+          // кружок супруга
+          mainNode.append("circle")
+            .attr("class", "spouse-circle")
+            .attr("r", 12)
+            .attr("cx", spouseX)
+            .attr("cy", spouseY)
+            .attr("fill", genderColor(spouse.gender))
+            .on("mousemove", (event) => {
+              tooltip.style("visibility", "visible")
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 20) + "px")
+                .text(`${spouse.name} ${spouse.surname} (${spouse.gender === "male" ? "муж" : "жена"})`);
+            })
+            .on("mouseout", () => tooltip.style("visibility", "hidden"));
+        });
+      });
     })
     .catch(err => console.error("Ошибка загрузки db.json:", err));
 </script>
