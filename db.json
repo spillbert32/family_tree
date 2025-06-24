@@ -1,12 +1,28 @@
 {
   "people": [
+    //Поколение 3 (Дедушки)
     {"id":"p1","name":"Пётр","surname":"Мариничев","patronymic":"","birthYear":1950,"gender":"male","spouses":["p2"],"parents":[]},
+
+    //Поколение 3 (Бабушки)
     {"id":"p2","name":"Галина","surname":"Рыбасова","patronymic":"Александровна","birthYear":1953,"gender":"female","spouses":["p1"],"parents":[]},
+
+    //Поколение 2 (Родители муж.)
     {"id":"p3","name":"Александр","surname":"Мариничев","patronymic":"Петрович","birthYear":1975,"gender":"male","spouses":["p4"],"parents":["p1","p2"]},
-    {"id":"p4","name":"Ольга","surname":"Иванова","patronymic":"Викторовна","birthYear":1978,"gender":"female","spouses":["p3"],"parents":[]},
     {"id":"p5","name":"Олег","surname":"Мариничев","patronymic":"Петрович","birthYear":1978,"gender":"male","spouses":["p6"],"parents":["p1","p2"]},
-    {"id":"p6","name":"Ирина","surname":"Шаповалова","patronymic":"Сергеевна","birthYear":1980,"gender":"female","spouses":["p5"],"parents":[]},
     {"id":"p7","name":"Дмитрий","surname":"Мариничев","patronymic":"Петрович","birthYear":1983,"gender":"male","spouses":["p8"],"parents":["p1","p2"]},
+    
+    //Поколение 2 (Родители жен.)
+    {"id":"p4","name":"Ольга","surname":"Иванова","patronymic":"Викторовна","birthYear":1978,"gender":"female","spouses":["p3"],"parents":[]},
+    {"id":"p6","name":"Ирина","surname":"Шаповалова","patronymic":"Сергеевна","birthYear":1980,"gender":"female","spouses":["p5"],"parents":[]},
     {"id":"p8","name":"Палия","surname":"Соколова","patronymic":"Владимировна","birthYear":1985,"gender":"female","spouses":["p7"],"parents":[]}
+
+    //Поколение 1 (Дети муж.)
+    {"id":"p9","name":"Владислав","surname":"Мариничев","patronymic":"Олегович","birthYear":2002,"gender":"male","spouses":[],"parents":["p5","p6"]},
+    {"id":"p11","name":"Арсений","surname":"Мариничев","patronymic":"Дмитриевич","birthYear":????,"gender":"male","spouses":[],"parents":["p7","p8"]},
+
+    //Поколение 1 (Дети жен.)
+    {"id":"p10","name":"Полина","surname":"Мариничева","patronymic":"Олеговна","birthYear":2006,"gender":"female","spouses":[],"parents":["p5","p6"]},
+    {"id":"p11","name":"Виктория","surname":"Мариничева","patronymic":"Дмитриевна","birthYear":????,"gender":"female","spouses":[],"parents":["p7","p8"]},
+
   ]
 }
