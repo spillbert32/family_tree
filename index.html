@@ -2,11 +2,18 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо с супругами</title>
+  <title>Родовое древо с зумом и вертикальным расположением</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
+      overflow: hidden;
+    }
+    svg {
+      border: 1px solid #ccc;
+      width: 100%;
+      height: 900px;
+      cursor: grab;
     }
     .node circle {
       stroke: steelblue;
@@ -52,18 +59,30 @@
 </head>
 <body>
 
-<h2>Родовое древо с супругами</h2>
-<svg width="1500" height="1000"></svg>
+<h2>Родовое древо с зумом и вертикальным расположением</h2>
+<svg></svg>
 <div id="tooltip" class="tooltip"></div>
 
 <script>
-  const svg = d3.select("svg")
-    .append("g")
-    .attr("transform", "translate(100, 50)");
+  const svg = d3.select("svg");
+  const width = +svg.node().clientWidth;
+  const height = +svg.node().clientHeight;
+
+  // Группа для всего дерева, к ней применим зум
+  const svgGroup = svg.append("g").attr("transform", "translate(100, 50)");
+
+  // Добавляем зум и панорамирование к SVG
+  svg.call(d3.zoom()
+    .scaleExtent([0.3, 3])
+    .on("zoom", (event) => {
+      svgGroup.attr("transform", event.transform);
+    })
+  );
 
   const tooltip = d3.select("#tooltip");
 
-  const treeLayout = d3.tree().size([900, 1300]); // height, width
+  // Вертикальное дерево - ширина = высота, высота = ширина для удобства
+  const treeLayout = d3.tree().size([width - 200, height - 150]);
 
   function genderColor(gender) {
     if (gender === "male") return "#1f77b4";
@@ -83,7 +102,7 @@
         return;
       }
 
-      // Рекурсивно строим древо
+      // Построение иерархии
       function buildHierarchy(person) {
         const node = { ...person, children: [] };
         const children = familyTreeData.people.filter(p => p.parents?.includes(person.id));
@@ -106,23 +125,33 @@
       }
 
       const hierarchyData = d3.hierarchy(treeRoot);
+
+      // Увеличиваем вертикальные отступы для предотвращения наложений
+      // Здесь d3.tree() не даёт напрямую менять отступы,
+      // но мы можем модифицировать позиции вручную после layout:
       treeLayout(hierarchyData);
 
-      // Основные линии (родители — дети)
-      svg.selectAll('.link')
+      // Увеличиваем вертикальные отступы, умножая координату X
+      const levelSeparationFactor = 2.5;
+      hierarchyData.descendants().forEach(d => {
+        d.x = d.x * levelSeparationFactor;
+      });
+
+      // Линии связи (родители - дети) - вертикальные
+      svgGroup.selectAll('.link')
         .data(hierarchyData.links())
         .join('path')
         .attr('class', 'link')
-        .attr('d', d3.linkHorizontal()
-          .x(d => d.y)
-          .y(d => d.x));
+        .attr('d', d3.linkVertical()
+          .x(d => d.x)
+          .y(d => d.y));
 
-      // Узлы (люди)
-      const node = svg.selectAll('.node')
+      // Узлы
+      const node = svgGroup.selectAll('.node')
         .data(hierarchyData.descendants())
         .join('g')
         .attr('class', 'node')
-        .attr('transform', d => `translate(${d.y},${d.x})`);
+        .attr('transform', d => `translate(${d.x},${d.y})`);
 
       node.append('circle')
         .attr('r', 22)
@@ -133,15 +162,15 @@
       node.append('text')
         .attr('class', 'name')
         .attr('dy', -12)
-        .attr('x', d => d.children ? -30 : 30)
-        .style('text-anchor', d => d.children ? 'end' : 'start')
+        .attr('y', d => d.children ? -30 : 30)
+        .style('text-anchor', 'middle')
         .text(d => `${d.data.name || ""} ${d.data.surname || ""}`);
 
       node.append('text')
         .attr('class', 'dates')
         .attr('dy', 12)
-        .attr('x', d => d.children ? -30 : 30)
-        .style('text-anchor', d => d.children ? 'end' : 'start')
+        .attr('y', d => d.children ? -15 : 45)
+        .style('text-anchor', 'middle')
         .text(d => {
           if (!d.data.birthYear) return "";
           return d.data.deathYear
@@ -149,26 +178,25 @@
             : `р. ${d.data.birthYear}`;
         });
 
-      // Отобразить супругов рядом с каждым узлом
+      // Отобразить супругов рядом с каждым узлом справа
       node.each(function(d) {
         if (!d.data.spouses) return;
 
         const mainNode = d3.select(this);
-        const mainX = 0, mainY = 0;
         const spacing = 55; // расстояние от основного круга до кружка супруга
 
         d.data.spouses.forEach((spouseId, i) => {
           const spouse = personMap.get(spouseId);
           if (!spouse) return;
 
-          const spouseX = spacing + i * 45; // смещение по X вправо
+          const spouseX = 22 + spacing + i * 45; // справа от основного круга
           const spouseY = 0;
 
           // линия к супругу
           mainNode.append("line")
             .attr("class", "spouse-link")
-            .attr("x1", mainX + 22)  // край основного круга справа
-            .attr("y1", mainY)
+            .attr("x1", 22)  // край основного круга справа
+            .attr("y1", 0)
             .attr("x2", spouseX - 12) // край кружка супруга слева
             .attr("y2", spouseY);
 
