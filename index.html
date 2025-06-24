@@ -2,17 +2,20 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо для GitHub Pages</title>
+  <title>Родовое древо из db.json</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
+    body {
+      font-family: sans-serif;
+    }
     .node circle {
       stroke: steelblue;
       stroke-width: 3px;
     }
     .node text.name {
       font: 14px sans-serif;
-      fill: #333;
       font-weight: bold;
+      fill: #333;
     }
     .node text.dates {
       font: 12px sans-serif;
@@ -20,98 +23,123 @@
     }
     .link {
       fill: none;
-      stroke: #555;
+      stroke: #999;
       stroke-width: 2px;
+    }
+    #tree-selector {
+      margin: 10px;
     }
   </style>
 </head>
 <body>
 
-<svg width="960" height="600"></svg>
+<h2>Родовое древо</h2>
+<label for="tree-selector">Выберите человека (по ID):</label>
+<select id="tree-selector"></select>
+
+<svg width="1000" height="700"></svg>
 
 <script>
-  // Встраиваем данные прямо сюда, чтобы fetch не нужен был
-  const data = {
-    "name": "Иван Иванович",
-    "gender": "male",
-    "birthYear": 1950,
-    "deathYear": 2020,
-    "children": [
-      { 
-        "name": "Сергей Иванович",
-        "gender": "male",
-        "birthYear": 1980,
-        "children": [
-          { "name": "Дмитрий Сергеевич", "gender": "male", "birthYear": 2010 },
-          { "name": "Андрей Сергеевич", "gender": "male", "birthYear": 2012 }
-        ]
-      },
-      {
-        "name": "Ольга Ивановна",
-        "gender": "female",
-        "birthYear": 1985,
-        "children": [
-          { "name": "Мария Ольговна", "gender": "female", "birthYear": 2015 }
-        ]
-      }
-    ]
-  };
-
   const svg = d3.select("svg")
-    .attr("width", 960)
-    .attr("height", 600)
+    .attr("width", 1000)
+    .attr("height", 700)
     .append("g")
-    .attr("transform", "translate(40,0)");
+    .attr("transform", "translate(60,20)");
 
-  const treeLayout = d3.tree().size([600 - 100, 960 - 160]);
+  const treeLayout = d3.tree().size([600, 800]);
 
   function genderColor(gender) {
     if (gender === "male") return "#1f77b4";
     if (gender === "female") return "#e377c2";
-    return "#999";
+    return "#ccc";
   }
 
-  const root = d3.hierarchy(data);
-  treeLayout(root);
+  // Загружаем JSON-файл
+  fetch('db.json')
+    .then(response => response.json())
+    .then(familyTreeData => {
+      const personMap = new Map(familyTreeData.people.map(p => [p.id, p]));
 
-  svg.selectAll('.link')
-    .data(root.links())
-    .join('path')
-    .attr('class', 'link')
-    .attr('d', d3.linkHorizontal()
-      .x(d => d.y)
-      .y(d => d.x));
+      function buildHierarchy(id) {
+        const person = personMap.get(id);
+        if (!person) return null;
 
-  const node = svg.selectAll('.node')
-    .data(root.descendants())
-    .join('g')
-    .attr('class', 'node')
-    .attr('transform', d => `translate(${d.y},${d.x})`);
+        const node = { ...person, children: [] };
 
-  node.append('circle')
-    .attr('r', 20)
-    .attr('fill', d => genderColor(d.data.gender))
-    .attr('stroke', 'steelblue')
-    .attr('stroke-width', 3);
+        const children = familyTreeData.people.filter(p => p.parents?.includes(id));
+        if (children.length > 0) {
+          node.children = children.map(child => buildHierarchy(child.id));
+        }
 
-  node.append('text')
-    .attr('class', 'name')
-    .attr('dy', -10)
-    .attr('x', d => d.children ? -25 : 25)
-    .style('text-anchor', d => d.children ? 'end' : 'start')
-    .text(d => d.data.name);
+        return node;
+      }
 
-  node.append('text')
-    .attr('class', 'dates')
-    .attr('dy', 10)
-    .attr('x', d => d.children ? -25 : 25)
-    .style('text-anchor', d => d.children ? 'end' : 'start')
-    .text(d => {
-      const b = d.data.birthYear ? d.data.birthYear : "?";
-      const dth = d.data.deathYear ? d.data.deathYear : "";
-      return dth ? `${b} - ${dth}` : `р. ${b}`;
+      function buildTree(rootId) {
+        svg.selectAll("*").remove(); // очистка
+
+        const hierarchyData = d3.hierarchy(buildHierarchy(rootId));
+        treeLayout(hierarchyData);
+
+        svg.selectAll('.link')
+          .data(hierarchyData.links())
+          .join('path')
+          .attr('class', 'link')
+          .attr('d', d3.linkHorizontal()
+            .x(d => d.y)
+            .y(d => d.x));
+
+        const node = svg.selectAll('.node')
+          .data(hierarchyData.descendants())
+          .join('g')
+          .attr('class', 'node')
+          .attr('transform', d => `translate(${d.y},${d.x})`);
+
+        node.append('circle')
+          .attr('r', 20)
+          .attr('fill', d => genderColor(d.data.gender))
+          .attr('stroke', 'steelblue')
+          .attr('stroke-width', 3);
+
+        node.append('text')
+          .attr('class', 'name')
+          .attr('dy', -10)
+          .attr('x', d => d.children ? -25 : 25)
+          .style('text-anchor', d => d.children ? 'end' : 'start')
+          .text(d => d.data.name || "—");
+
+        node.append('text')
+          .attr('class', 'dates')
+          .attr('dy', 10)
+          .attr('x', d => d.children ? -25 : 25)
+          .style('text-anchor', d => d.children ? 'end' : 'start')
+          .text(d => {
+            if (!d.data.birthYear) return "";
+            return d.data.deathYear
+              ? `${d.data.birthYear} - ${d.data.deathYear}`
+              : `р. ${d.data.birthYear}`;
+          });
+      }
+
+      // Заполняем селектор
+      const select = document.getElementById("tree-selector");
+      familyTreeData.people.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.text = `${p.name} (ID: ${p.id})`;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener("change", e => {
+        const selectedId = parseInt(e.target.value);
+        buildTree(selectedId);
+      });
+
+      // Автостарт с первого человека
+      buildTree(familyTreeData.people[0].id);
+    })
+    .catch(error => {
+      console.error("Ошибка загрузки db.json:", error);
     });
-
 </script>
 
 </body>
