@@ -2,61 +2,50 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<title>Родовое древо с парами</title>
+<title>Родовое древо с круглыми узлами</title>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
   body {
     font-family: Arial, sans-serif;
   }
-  .node rect {
-    stroke: #999;
-    fill: #fff;
-    stroke-width: 1.5px;
-    rx: 6px;
-    ry: 6px;
-  }
-  .node text {
-    font-size: 12px;
-    pointer-events: none;
+  .node circle {
+    stroke: #666;
+    stroke-width: 2px;
   }
   .male {
-    fill: #cce5ff;
+    fill: #5dade2;
   }
   .female {
-    fill: #f9c6d1;
-  }
-  .spouse-group {
-    cursor: pointer;
+    fill: #ec7063;
   }
   .link {
     fill: none;
-    stroke: #555;
+    stroke: #aaa;
     stroke-width: 2px;
+  }
+  text {
+    font-size: 12px;
+    pointer-events: none;
   }
 </style>
 </head>
 <body>
-<h2>Родовое древо с семьями</h2>
+<h2>Родовое древо с круглыми узлами</h2>
 <div id="tree"></div>
 
 <script>
-// Загрузка данных из db.json
 fetch('db.json')
   .then(res => res.json())
-  .then(data => {
-    buildFamilyTree(data.people);
-  })
+  .then(data => buildFamilyTree(data.people))
   .catch(e => {
     document.body.innerHTML = '<h3>Ошибка загрузки db.json</h3><pre>' + e + '</pre>';
   });
 
-// Основная функция построения дерева
 function buildFamilyTree(people) {
-  // Создаем map для быстрого доступа по id
   const personMap = new Map();
   people.forEach(p => personMap.set(p.id, p));
 
-  // Шаг 1. Формируем пары супругов (уникальные)
+  // Формируем пары
   const pairsMap = new Map();
 
   people.forEach(person => {
@@ -69,7 +58,6 @@ function buildFamilyTree(people) {
         }
       });
     } else {
-      // Одинокий человек без супруги
       const pairKey = person.id;
       if (!pairsMap.has(pairKey)) {
         pairsMap.set(pairKey, { spouses: [person.id], children: [] });
@@ -77,39 +65,30 @@ function buildFamilyTree(people) {
     }
   });
 
-  // Шаг 2. Привязываем детей к парам
+  // Привязываем детей к парам
   people.forEach(person => {
     if (person.parents && person.parents.length > 0) {
       const parentsSorted = [...person.parents].sort();
-      let pairKey;
-      if (parentsSorted.length === 2) {
-        pairKey = parentsSorted.join('_');
-      } else {
-        pairKey = parentsSorted[0];
-      }
+      let pairKey = parentsSorted.length === 2 ? parentsSorted.join('_') : parentsSorted[0];
       if (pairsMap.has(pairKey)) {
         pairsMap.get(pairKey).children.push(person.id);
       } else {
-        // Если пары нет — создаём её
         pairsMap.set(pairKey, { spouses: parentsSorted, children: [person.id] });
       }
     }
   });
 
-  // Функция проверки, есть ли у человека родители
-  function hasParents(personId) {
-    const p = personMap.get(personId);
+  function hasParents(id) {
+    const p = personMap.get(id);
     return p && p.parents && p.parents.length > 0;
   }
 
-  // Шаг 3. Определяем корни — пары, у которых супруги не имеют родителей
+  // Корни — пары, где супруги без родителей
   const roots = [];
   pairsMap.forEach((pair, key) => {
-    const anyHasNoParents = pair.spouses.some(id => !hasParents(id));
-    if (anyHasNoParents) roots.push({ key, ...pair });
+    if (pair.spouses.some(id => !hasParents(id))) roots.push({ key, ...pair });
   });
 
-  // Шаг 4. Рекурсивно строим дерево из пар
   function buildNode(pairKey) {
     const pair = pairsMap.get(pairKey);
     if (!pair) return null;
@@ -137,40 +116,29 @@ function buildFamilyTree(people) {
 
   const treeDataRoots = roots.map(root => buildNode(root.key));
 
-  // --- Отрисовка дерева ---
+  const width = 1200, height = 800;
+  const dx = 120, dy = 180;
 
-  // Настройки размера
-  const width = 1200;
-  const height = 800;
-  const dx = 100;
-  const dy = 160;
-
-  // Создаем svg
   const svg = d3.select("#tree").append("svg")
     .attr("width", width)
     .attr("height", height)
     .style("border", "1px solid #ccc")
     .style("overflow", "auto");
 
-  // Создаем группу с трансформацией для отступов
-  const g = svg.append("g").attr("transform", `translate(40,40)`);
-
-  // Функция преобразования наших данных в формат d3.hierarchy
+  const g = svg.append("g").attr("transform", "translate(50,50)");
 
   function pairToHierarchy(node) {
     return d3.hierarchy(node, d => d.children);
   }
 
-  // Создаем d3 деревья и компоновку для каждого корня с отступом по X
   treeDataRoots.forEach((rootNode, i) => {
     const root = pairToHierarchy(rootNode);
     const treeLayout = d3.tree().nodeSize([dx, dy]);
     treeLayout(root);
 
-    // Смещаем каждое дерево вправо
     const xOffset = i * (dy * 6);
 
-    // Рисуем связи
+    // Ссылки
     g.selectAll(`.link${i}`)
       .data(root.links())
       .join("path")
@@ -179,104 +147,74 @@ function buildFamilyTree(people) {
         .x(d => d.x + xOffset)
         .y(d => d.y));
 
-    // Рисуем узлы
+    // Узлы
     const node = g.selectAll(`.node${i}`)
       .data(root.descendants())
       .join("g")
       .attr("class", "node")
       .attr("transform", d => `translate(${d.x + xOffset},${d.y})`);
 
-    // Прямоугольники под пару супругов
-    const rectWidth = 150;
-    const rectHeight = 40;
+    const circleRadius = 18;
+    const spouseSpacing = 45;
 
-    node.append("rect")
-      .attr("width", rectWidth)
-      .attr("height", rectHeight)
-      .attr("x", -rectWidth / 2)
-      .attr("y", -rectHeight / 2)
-      .attr("rx", 10)
-      .attr("ry", 10)
-      .attr("fill", d => {
-        // Если мужчина или женщина — подсветка по полу (если один супруг — берем его пол)
-        const spouses = d.data.spouses;
-        if (spouses.length === 1) {
-          return spouses[0].gender === "male" ? "#cce5ff" : "#f9c6d1";
-        } else {
-          // Смешанный цвет для пары
-          return "#e6f0ff";
-        }
-      })
-      .attr("stroke", "#999");
-
-    // Текст с именами супругов рядом
-    node.append("text")
-      .attr("dy", "-0.3em")
-      .attr("text-anchor", "middle")
-      .style("font-weight", "bold")
-      .text(d => {
-        if (d.data.spouses.length === 1) {
-          const p = d.data.spouses[0];
-          return `${p.surname} ${p.name} ${p.patronymic}\n(${p.birthYear})`;
-        } else {
-          const s1 = d.data.spouses[0];
-          const s2 = d.data.spouses[1];
-          return `${s1.surname} ${s1.name} ${s1.patronymic} + ${s2.name} ${s2.patronymic}\n(${s1.birthYear}, ${s2.birthYear})`;
-        }
-      })
-      .call(wrap, rectWidth - 10);
-
-    // Цвет пола для каждого имени (если пара, то отрисуем отдельно ниже)
     node.each(function(d) {
       const el = d3.select(this);
+
+      // Если пара — два супруга — рисуем два кружка
       if (d.data.spouses.length === 2) {
-        const xStart = -rectWidth / 2 + 5;
-        const yBase = 10;
-        // Имя 1
+        const [sp1, sp2] = d.data.spouses;
+
+        // Первый супруг
+        el.append("circle")
+          .attr("class", sp1.gender === 'male' ? "male" : "female")
+          .attr("r", circleRadius)
+          .attr("cx", -spouseSpacing / 2);
+
         el.append("text")
-          .attr("x", xStart)
-          .attr("y", yBase)
-          .attr("text-anchor", "start")
-          .attr("fill", d.data.spouses[0].gender === "male" ? "#004085" : "#721c24")
-          .text(`${d.data.spouses[0].surname} ${d.data.spouses[0].name} ${d.data.spouses[0].patronymic} (${d.data.spouses[0].birthYear})`);
-        // Имя 2 (супруга)
+          .attr("x", -spouseSpacing / 2)
+          .attr("y", circleRadius + 14)
+          .attr("text-anchor", "middle")
+          .text(`${sp1.name} ${sp1.patronymic}`);
+
+        // Второй супруг
+        el.append("circle")
+          .attr("class", sp2.gender === 'male' ? "male" : "female")
+          .attr("r", circleRadius)
+          .attr("cx", spouseSpacing / 2);
+
         el.append("text")
-          .attr("x", xStart)
-          .attr("y", yBase + 15)
-          .attr("text-anchor", "start")
-          .attr("fill", d.data.spouses[1].gender === "male" ? "#004085" : "#721c24")
-          .text(`${d.data.spouses[1].surname} ${d.data.spouses[1].name} ${d.data.spouses[1].patronymic} (${d.data.spouses[1].birthYear})`);
-        // Удаляем первый многострочный текст (чтобы не было дублирования)
-        el.select("text").text("");
+          .attr("x", spouseSpacing / 2)
+          .attr("y", circleRadius + 14)
+          .attr("text-anchor", "middle")
+          .text(`${sp2.name} ${sp2.patronymic}`);
+
+        // Фамилия (берем фамилию первого супруга)
+        el.append("text")
+          .attr("y", -circleRadius - 10)
+          .attr("text-anchor", "middle")
+          .style("font-weight", "bold")
+          .text(sp1.surname);
+
+      } else {
+        // Один супруг — один кружок и подпись
+        const sp = d.data.spouses[0];
+        el.append("circle")
+          .attr("class", sp.gender === 'male' ? "male" : "female")
+          .attr("r", circleRadius);
+
+        el.append("text")
+          .attr("y", circleRadius + 14)
+          .attr("text-anchor", "middle")
+          .text(`${sp.name} ${sp.patronymic}`);
+
+        el.append("text")
+          .attr("y", -circleRadius - 10)
+          .attr("text-anchor", "middle")
+          .style("font-weight", "bold")
+          .text(sp.surname);
       }
     });
   });
-
-  // Вспомогательная функция для переноса текста (wrap)
-  function wrap(text, width) {
-    text.each(function() {
-      const text = d3.select(this),
-        words = text.text().split(/\s+/).reverse(),
-        lineHeight = 1.1, // ems
-        y = text.attr("y"),
-        dy = parseFloat(text.attr("dy") || 0),
-        x = text.attr("x") || 0;
-      let line = [],
-        lineNumber = 0,
-        tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
-      let word;
-      while (word = words.pop()) {
-        line.push(word);
-        tspan.text(line.join(" "));
-        if (tspan.node().getComputedTextLength() > width) {
-          line.pop();
-          tspan.text(line.join(" "));
-          line = [word];
-          tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-        }
-      }
-    });
-  }
 }
 </script>
 </body>
