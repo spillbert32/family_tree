@@ -2,11 +2,12 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8" />
-<title>Родовое древо с круглыми узлами</title>
+<title>Динамическое родовое древо с круглыми узлами</title>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <style>
   body {
     font-family: Arial, sans-serif;
+    overflow: hidden;
   }
   .node circle {
     stroke: #666;
@@ -26,11 +27,15 @@
   text {
     font-size: 12px;
     pointer-events: none;
+    user-select: none;
+  }
+  .surname {
+    font-weight: bold;
   }
 </style>
 </head>
 <body>
-<h2>Родовое древо с круглыми узлами</h2>
+<h2>Динамическое родовое древо с круглыми узлами</h2>
 <div id="tree"></div>
 
 <script>
@@ -45,7 +50,6 @@ function buildFamilyTree(people) {
   const personMap = new Map();
   people.forEach(p => personMap.set(p.id, p));
 
-  // Формируем пары
   const pairsMap = new Map();
 
   people.forEach(person => {
@@ -65,7 +69,6 @@ function buildFamilyTree(people) {
     }
   });
 
-  // Привязываем детей к парам
   people.forEach(person => {
     if (person.parents && person.parents.length > 0) {
       const parentsSorted = [...person.parents].sort();
@@ -83,7 +86,6 @@ function buildFamilyTree(people) {
     return p && p.parents && p.parents.length > 0;
   }
 
-  // Корни — пары, где супруги без родителей
   const roots = [];
   pairsMap.forEach((pair, key) => {
     if (pair.spouses.some(id => !hasParents(id))) roots.push({ key, ...pair });
@@ -116,16 +118,22 @@ function buildFamilyTree(people) {
 
   const treeDataRoots = roots.map(root => buildNode(root.key));
 
-  const width = 1200, height = 800;
-  const dx = 120, dy = 180;
+  const width = 1400, height = 900;
+  const dx = 140, dy = 240;
 
   const svg = d3.select("#tree").append("svg")
     .attr("width", width)
     .attr("height", height)
     .style("border", "1px solid #ccc")
-    .style("overflow", "auto");
+    .call(d3.zoom()
+      .scaleExtent([0.5, 3])
+      .on("zoom", (event) => {
+        g.attr("transform", event.transform);
+      }))
+    .append("g")
+    .attr("transform", "translate(50,50)");
 
-  const g = svg.append("g").attr("transform", "translate(50,50)");
+  const g = svg;
 
   function pairToHierarchy(node) {
     return d3.hierarchy(node, d => d.children);
@@ -138,7 +146,7 @@ function buildFamilyTree(people) {
 
     const xOffset = i * (dy * 6);
 
-    // Ссылки
+    // Links
     g.selectAll(`.link${i}`)
       .data(root.links())
       .join("path")
@@ -147,74 +155,91 @@ function buildFamilyTree(people) {
         .x(d => d.x + xOffset)
         .y(d => d.y));
 
-    // Узлы
+    // Nodes
     const node = g.selectAll(`.node${i}`)
       .data(root.descendants())
       .join("g")
       .attr("class", "node")
       .attr("transform", d => `translate(${d.x + xOffset},${d.y})`);
 
-    const circleRadius = 18;
-    const spouseSpacing = 45;
+    const circleRadius = 20;
+    const spouseSpacing = 50;
+    const maxTextWidth = 100;
 
     node.each(function(d) {
       const el = d3.select(this);
 
-      // Если пара — два супруга — рисуем два кружка
       if (d.data.spouses.length === 2) {
         const [sp1, sp2] = d.data.spouses;
 
-        // Первый супруг
+        // Муж
         el.append("circle")
           .attr("class", sp1.gender === 'male' ? "male" : "female")
           .attr("r", circleRadius)
           .attr("cx", -spouseSpacing / 2);
 
-        el.append("text")
-          .attr("x", -spouseSpacing / 2)
-          .attr("y", circleRadius + 14)
-          .attr("text-anchor", "middle")
-          .text(`${sp1.name} ${sp1.patronymic}`);
+        addMultilineText(el, `${sp1.name} ${sp1.patronymic}`, -spouseSpacing / 2, circleRadius + 18, maxTextWidth);
 
-        // Второй супруг
+        // Жена
         el.append("circle")
           .attr("class", sp2.gender === 'male' ? "male" : "female")
           .attr("r", circleRadius)
           .attr("cx", spouseSpacing / 2);
 
-        el.append("text")
-          .attr("x", spouseSpacing / 2)
-          .attr("y", circleRadius + 14)
-          .attr("text-anchor", "middle")
-          .text(`${sp2.name} ${sp2.patronymic}`);
+        addMultilineText(el, `${sp2.name} ${sp2.patronymic}`, spouseSpacing / 2, circleRadius + 18, maxTextWidth);
 
-        // Фамилия (берем фамилию первого супруга)
+        // Фамилия
         el.append("text")
-          .attr("y", -circleRadius - 10)
+          .attr("class", "surname")
+          .attr("y", -circleRadius - 12)
           .attr("text-anchor", "middle")
-          .style("font-weight", "bold")
           .text(sp1.surname);
 
       } else {
-        // Один супруг — один кружок и подпись
         const sp = d.data.spouses[0];
+
         el.append("circle")
           .attr("class", sp.gender === 'male' ? "male" : "female")
           .attr("r", circleRadius);
 
-        el.append("text")
-          .attr("y", circleRadius + 14)
-          .attr("text-anchor", "middle")
-          .text(`${sp.name} ${sp.patronymic}`);
+        addMultilineText(el, `${sp.name} ${sp.patronymic}`, 0, circleRadius + 18, maxTextWidth);
 
         el.append("text")
-          .attr("y", -circleRadius - 10)
+          .attr("class", "surname")
+          .attr("y", -circleRadius - 12)
           .attr("text-anchor", "middle")
-          .style("font-weight", "bold")
           .text(sp.surname);
       }
     });
   });
+
+  // Функция для многострочного текста с переносом по пробелам
+  function addMultilineText(parent, text, x, y, maxWidth) {
+    const words = text.split(' ');
+    let line = [];
+    let lineNumber = 0;
+    const lineHeight = 14; // px
+
+    const textEl = parent.append("text")
+      .attr("x", x)
+      .attr("y", y)
+      .attr("text-anchor", "middle");
+
+    for (let i = 0; i < words.length; i++) {
+      line.push(words[i]);
+      textEl.text(line.join(' '));
+      if (textEl.node().getComputedTextLength() > maxWidth) {
+        line.pop();
+        textEl.text(line.join(' '));
+        line = [words[i]];
+        textEl.append("tspan")
+          .attr("x", x)
+          .attr("y", y + (++lineNumber) * lineHeight)
+          .attr("text-anchor", "middle")
+          .text(words[i]);
+      }
+    }
+  }
 }
 </script>
 </body>
