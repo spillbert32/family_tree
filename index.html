@@ -4,32 +4,8 @@
   <meta charset="UTF-8" />
   <title>Родовое древо с выбором семьи</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; overflow: hidden; }
-    .link { fill: none; stroke: #999; stroke-width: 2px; }
-    .node circle { stroke: #555; stroke-width: 2px; cursor: pointer; }
-    .male { fill: #5dade2; }
-    .female { fill: #f1948a; }
-    text { font-size: 12px; user-select: none; pointer-events: none; }
-    .surname { font-weight: bold; }
-    .maiden { font-style: italic; font-size: 11px; fill: #666; }
-    #buttons {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
-      padding: 6px;
-      border-radius: 5px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      z-index: 1000;
-    }
-    #buttons button {
-      margin-right: 6px;
-      padding: 6px 12px;
-      cursor: pointer;
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="buttons">
