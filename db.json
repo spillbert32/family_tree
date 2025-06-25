@@ -1,6 +1,6 @@
 {
   "marinichev": [
-    { "id": "M1", "name": "Пётр", "surname": "Мариничев", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "male", "spouses": ["M2"], "parents": ["M15"] },
+    { "id": "M1", "name": "Пётр", "surname": "Мариничев", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "male", "spouses": ["M2"], "parents": ["M15", "M17"] },
     { "id": "M2", "name": "Галина", "surname": "Мариничева", "maidenSurname": "Рыбасова", "patronymic": "Александровна", "birthYear": 1953, "gender": "female", "spouses": ["M1"], "parents": [] },
     { "id": "M3", "name": "Александр", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1975, "gender": "male", "spouses": ["M4"], "parents": ["M1", "M2"] },
     { "id": "M4", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1978, "gender": "female", "spouses": ["M3"], "parents": [] },
@@ -15,7 +15,7 @@
     { "id": "M13", "name": "Евгений", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M3", "M4"] },
     { "id": "M14", "name": "Иван", "surname": "Кулаков", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M3", "M4"] },
     { "id": "M15", "name": "Логин", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1920, "gender": "male", "spouses": [], "parents": [] },
-    { "id": "M16", "name": "Александр", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 1950, "gender": "male", "spouses": ["M17"], "parents": [] },
+    { "id": "M16", "name": "Александр", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 1950, "gender": "male", "spouses": ["M17"], "parents": ["M15", "M17"] },
     { "id": "M17", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "female", "spouses": ["M15"], "parents": [] }
   ],
   "shapovalov": [
