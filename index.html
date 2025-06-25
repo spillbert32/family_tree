@@ -2,12 +2,11 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо с девичьими фамилиями и toggle и выбором дерева</title>
+  <title>Родовое древо с выбором семьи</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; overflow: hidden; }
     .link { fill: none; stroke: #999; stroke-width: 2px; }
-    .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
     .node circle { stroke: #555; stroke-width: 2px; cursor: pointer; }
     .male { fill: #5dade2; }
     .female { fill: #f1948a; }
@@ -34,33 +33,25 @@
 </head>
 <body>
   <div id="buttons">
-    <button id="btnAll">Все родственники</button>
-    <button id="btnTree1">Мариничевы</button>
-    <button id="btnTree2">Шаповаловы</button>
+    <button id="btnMarinichev">Мариничевы</button>
+    <button id="btnShapovalov">Шаповаловы</button>
   </div>
   <svg width="1800" height="1000"></svg>
 
   <script>
-    let currentTransform = null; // Хранит текущую трансформацию zoom/pan
-    let allPeople = []; // Все данные из db.json
-    let currentTrees = []; // Текущие отображаемые деревья
+    let currentTransform = null;
+    let trees = {};
 
-    // Загрузка данных
     fetch("db.json")
       .then(res => res.json())
       .then(data => {
-        allPeople = data.people;
-        currentTrees = buildTree(allPeople); // Построение всех деревьев
-        render(currentTrees);
-      })
-      .catch(err => console.error("Ошибка загрузки db.json:", err));
+        trees = {
+          tree1: buildTree(data.marinichev),
+          tree2: buildTree(data.shapovalov)
+        };
+        render(trees.tree1);
+      });
 
-    // Фильтрация людей по treeId
-    function filterPeopleByTree(people, treeId) {
-      return people.filter(p => p.treeId === treeId);
-    }
-
-    // Построение дерева из массива людей
     function buildTree(people) {
       const personMap = new Map(people.map(p => [p.id, p]));
       const pairsMap = new Map();
@@ -140,16 +131,12 @@
     function render(treeData) {
       const svg = d3.select("svg").attr("pointer-events", "all");
       svg.selectAll("*").remove();
-
       const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
 
-      svg.call(d3.zoom()
-        .scaleExtent([0.5, 3])
-        .on("zoom", e => {
-          g.attr("transform", e.transform);
-          currentTransform = e.transform;
-        })
-      );
+      svg.call(d3.zoom().scaleExtent([0.5, 3]).on("zoom", e => {
+        g.attr("transform", e.transform);
+        currentTransform = e.transform;
+      }));
 
       const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
 
@@ -203,29 +190,21 @@
 
           if (sp.length === 2) {
             const [a, b] = sp;
-
             el.append("circle").attr("class", a.gender === "male" ? "male" : "female").attr("r", circleRadius).attr("cx", -spouseSpacing / 2);
             el.append("circle").attr("class", b.gender === "male" ? "male" : "female").attr("r", circleRadius).attr("cx", spouseSpacing / 2);
-
             el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
             el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
-
             addMaiden(a, -spouseSpacing / 2);
             addMaiden(b, spouseSpacing / 2);
-
             el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
             if (a.patronymic) el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
             el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(b.name);
             if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
           } else {
             const a = sp[0];
-
             el.append("circle").attr("class", a.gender === "male" ? "male" : "female").attr("r", circleRadius);
-
             el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
-
             addMaiden(a, 0);
-
             el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
             if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
           }
@@ -233,25 +212,14 @@
       });
     }
 
-    // Обработчики кнопок
-    document.getElementById("btnAll").addEventListener("click", () => {
-      currentTrees = buildTree(allPeople);
+    document.getElementById("btnMarinichev").addEventListener("click", () => {
       currentTransform = null;
-      render(currentTrees);
+      render(trees.tree1);
     });
 
-    document.getElementById("btnTree1").addEventListener("click", () => {
-      const filtered = filterPeopleByTree(allPeople, "tree1");
-      currentTrees = buildTree(filtered);
+    document.getElementById("btnShapovalov").addEventListener("click", () => {
       currentTransform = null;
-      render(currentTrees);
-    });
-
-    document.getElementById("btnTree2").addEventListener("click", () => {
-      const filtered = filterPeopleByTree(allPeople, "tree2");
-      currentTrees = buildTree(filtered);
-      currentTransform = null;
-      render(currentTrees);
+      render(trees.tree2);
     });
   </script>
 </body>
