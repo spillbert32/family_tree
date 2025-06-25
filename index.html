@@ -22,20 +22,20 @@
   fetch("db.json")
     .then(res => res.json())
     .then(data => {
-      // Построить единое древо
       const rootData = buildUnifiedTree(data.people);
       render(rootData);
     })
     .catch(err => console.error("Ошибка загрузки db.json:", err));
 
-  // === Построение единого объединённого дерева ===
   function buildUnifiedTree(people) {
     const map = new Map(people.map(p => [p.id, {...p}]));
-    
-    // Добавим вспомогательное поле children для каждого человека
-    people.forEach(p => p.children = []);
-    
-    // Установим родительские связи в объекте
+
+    // Инициализируем поле children у каждого человека
+    people.forEach(p => {
+      p.children = [];
+    });
+
+    // Заполняем детей у родителей
     people.forEach(p => {
       if(p.parents?.length === 2){
         const father = map.get(p.parents[0]);
@@ -44,11 +44,10 @@
         if(mother) mother.children.push(p.id);
       }
     });
-    
-    // Найдём корней — те у кого нет родителей
+
+    // Ищем корней (у кого нет родителей)
     const roots = people.filter(p => !p.parents || p.parents.length === 0);
-    
-    // Если несколько корней, создаём фиктивный общий корень
+
     if(roots.length > 1){
       const virtualRoot = {
         id: "root",
@@ -69,38 +68,31 @@
     }
   }
 
-  // Рекурсивная функция строит иерархию с учётом супругов и детей
   function buildHierarchy(id, map, processed = new Set()) {
-    if(processed.has(id)) {
-      // Если уже обработали этот узел, вернём ссылку для избежания циклов
-      return { id, isReference: true };
-    }
+    if(processed.has(id)) return { id, isReference: true };
     processed.add(id);
-    
+
     const person = map.get(id);
     if(!person) return null;
-    
-    // Найдём супругу/супруга (возьмём первого в списке супругов, если есть)
+
+    // Находим первого супруга, кроме самого себя
     let spouseId = person.spouses && person.spouses.length > 0 ? person.spouses.find(sid => sid !== id) : null;
-    
-    // Формируем объект с супругами
+
     let spouses = [person];
     if(spouseId){
       const spousePerson = map.get(spouseId);
       if(spousePerson) spouses.push(spousePerson);
     }
-    
-    // Соберём детей — всех у обоих супругов, без дублирования
+
     let childrenIds = new Set();
     spouses.forEach(sp => {
       (sp.children || []).forEach(cid => childrenIds.add(cid));
     });
-    
-    // Построим дочерние узлы рекурсивно
+
     const children = Array.from(childrenIds)
       .map(cid => buildHierarchy(cid, map, processed))
       .filter(c => c !== null);
-    
+
     return {
       id,
       spouses,
@@ -109,7 +101,6 @@
     };
   }
 
-  // === Функция переключения (сворачивания/разворачивания веток) ===
   function toggle(d) {
     if(d.children){
       d._children = d.children;
@@ -120,7 +111,6 @@
     }
   }
 
-  // === Отрисовка дерева с сохранением положения камеры ===
   function render(rootData) {
     const svg = d3.select("svg");
     svg.selectAll("*").remove();
@@ -128,7 +118,7 @@
     const height = +svg.attr("height");
     const g = svg.append("g").attr("transform", "translate(100,50)");
 
-    // Инициализация zoom и сохранение позиции/масштаба
+    // Сохраняем или инициализируем трансформ камеры
     let transform = svg.property("__currentTransform") || d3.zoomIdentity;
 
     const zoom = d3.zoom()
@@ -139,16 +129,12 @@
       });
     svg.call(zoom).call(zoom.transform, transform);
 
-    // Размеры для расположения
     const dx = 300, dy = 280, spouseSpacing = 120, circleRadius = 28;
 
-    // Создаём иерархию для D3
     const root = d3.hierarchy(rootData, d => d.children);
 
-    // Создаём дерево
     d3.tree().nodeSize([dx, dy])(root);
 
-    // Отрисовываем связи
     g.selectAll(".link")
       .data(root.links())
       .join("path")
@@ -157,7 +143,6 @@
         .x(d => d.x)
         .y(d => d.y));
 
-    // Отрисовываем узлы
     const nodes = g.selectAll(".node")
       .data(root.descendants(), d => d.data.id)
       .join(enter => enter.append("g")
@@ -166,7 +151,7 @@
         .style("cursor", "pointer")
         .on("click", (_, d) => {
           toggle(d.data);
-          render(rootData); // Перерисовка с сохранением позиции камеры
+          render(rootData);
         })
       );
 
