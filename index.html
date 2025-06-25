@@ -1,4 +1,4 @@
-<!DOCTYPE html>Add commentMore actions
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
@@ -14,14 +14,13 @@
     text { font-size: 12px; user-select: none; pointer-events: none; }
     .surname { font-weight: bold; }
     .maiden { font-style: italic; font-size: 11px; fill: #666; }
-
   </style>
 </head>
 <body>
   <svg width="1800" height="1000"></svg>
 
   <script>
-    let currentTransform = null; // Хранит текущую трансформацию zoom/pan
+    let currentTransform = null;
 
     fetch("db.json")
       .then(res => res.json())
@@ -31,25 +30,20 @@
       })
       .catch(err => console.error("Ошибка загрузки db.json:", err));
 
-
     function buildTree(people) {
       const personMap = new Map(people.map(p => [p.id, p]));
       const pairsMap = new Map();
 
-
       people.forEach(p => {
         if (p.spouses?.length) {
-
           p.spouses.forEach(spId => {
             const key = [p.id, spId].sort().join("_");
             if (!pairsMap.has(key)) pairsMap.set(key, { spouses: [p.id, spId], children: [] });
           });
         } else {
-
           pairsMap.set(p.id, { spouses: [p.id], children: [] });
         }
       });
-
 
       people.forEach(p => {
         if (p.parents?.length) {
@@ -61,9 +55,7 @@
         }
       });
 
-
       const hasParents = id => personMap.get(id)?.parents?.length > 0;
-
 
       const roots = [];
       pairsMap.forEach((pair, key) => {
@@ -72,14 +64,16 @@
         }
       });
 
-
       const used = new Set();
-
 
       function buildNode(key) {
         if (used.has(key)) {
-
-          return { id: key, spouses: pairsMap.get(key).spouses.map(i=>personMap.get(i)), children: null, isReference: true };
+          return {
+            id: key,
+            spouses: pairsMap.get(key).spouses.map(i => personMap.get(i)),
+            children: null,
+            isReference: true
+          };
         }
         used.add(key);
         const { spouses, children } = pairsMap.get(key);
@@ -88,46 +82,32 @@
           spouses: spouses.map(i => personMap.get(i)),
           children: children.map(cid => {
             const ch = personMap.get(cid);
-
-            const childKey = [...new Set([ch.id, ...(ch.spouses||[])])].sort().join("_");
+            const childKey = [...new Set([ch.id, ...(ch.spouses || [])])].sort().join("_");
             return buildNode(childKey);
           }),
           isReference: false
         };
       }
 
-
       return roots.map(r => buildNode(r.key));
     }
-
 
     function toggle(d) {
       if (d.children) { d._children = d.children; d.children = null; }
       else if (d._children) { d.children = d._children; d._children = null; }
-
-
-
-
-
-
     }
-
 
     function render(treeData) {
       const svg = d3.select("svg").attr("pointer-events", "all");
       svg.selectAll("*").remove();
 
-
-
-      // Восстанавливаем трансформацию, если есть, иначе начальная позиция
       const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
 
-
       svg.call(d3.zoom()
-        .scaleExtent([0.5,3])
+        .scaleExtent([0.5, 3])
         .on("zoom", e => {
           g.attr("transform", e.transform);
-          currentTransform = e.transform; // Обновляем сохранённую трансформацию при зуме/пане
+          currentTransform = e.transform;
         })
       );
 
@@ -138,91 +118,67 @@
         d3.tree().nodeSize([dx, dy])(root);
         const xOff = rootIndex * 900;
 
-
-        g.selectAll(".link"+rootIndex)
+        g.selectAll(".link" + rootIndex)
           .data(root.links())
           .join("path")
           .attr("class", d => d.target.data.isReference ? "link link-dashed" : "link")
-          .attr("d", d3.linkVertical().x(d=>d.x+xOff).y(d=>d.y));
+          .attr("d", d3.linkVertical().x(d => d.x + xOff).y(d => d.y));
 
-
-        const nodes = g.selectAll(".node"+rootIndex)
-          .data(root.descendants(), d=>d.data.id)
+        const nodes = g.selectAll(".node" + rootIndex)
+          .data(root.descendants(), d => d.data.id)
           .join(enter => enter.append("g")
-            .attr("class","node")
-            .attr("transform", d=>`translate(${d.x+xOff},${d.y})`)
-            .on("click", (_,d)=> { 
+            .attr("class", "node")
+            .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
+            .on("click", (_, d) => {
               toggle(d.data);
-              // сохраняем текущую трансформацию перед перерисовкой
               currentTransform = g.attr("transform");
               render(treeData);
             })
           );
 
-
         nodes.each(function(d) {
+          if (d.data.isReference) return; // 🔴 Пропускаем отрисовку визуальных элементов
+
           const el = d3.select(this), sp = d.data.spouses;
 
-
-          const surnameDisplay = p => p.gender==="female" && p.spouses?.length && p.maidenSurname && p.maidenSurname!==p.surname
+          const surnameDisplay = p => p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname
             ? p.surname : p.surname;
 
-
           const addMaiden = (p, x) => {
-            if (p.gender==="female" && p.spouses?.length && p.maidenSurname && p.maidenSurname!==p.surname) {
+            if (p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname) {
               el.append("text")
-                .attr("class","maiden")
+                .attr("class", "maiden")
                 .attr("x", x)
-                .attr("y", circleRadius+16)
-                .attr("text-anchor","middle")
+                .attr("y", circleRadius + 16)
+                .attr("text-anchor", "middle")
                 .text(`(дев. ${p.maidenSurname})`);
             }
           };
 
           if (sp.length === 2) {
-            const [a,b] = sp;
+            const [a, b] = sp;
 
-            el.append("circle").attr("class", a.gender==="male"?"male":"female").attr("r",circleRadius).attr("cx",-spouseSpacing/2);
-            el.append("circle").attr("class", b.gender==="male"?"male":"female").attr("r",circleRadius).attr("cx",spouseSpacing/2);
+            el.append("circle").attr("class", a.gender === "male" ? "male" : "female").attr("r", circleRadius).attr("cx", -spouseSpacing / 2);
+            el.append("circle").attr("class", b.gender === "male" ? "male" : "female").attr("r", circleRadius).attr("cx", spouseSpacing / 2);
 
+            el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
+            el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
 
-            el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("x",-spouseSpacing/2).attr("text-anchor","middle").text(surnameDisplay(a));
-            el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("x",spouseSpacing/2).attr("text-anchor","middle").text(surnameDisplay(b));
+            addMaiden(a, -spouseSpacing / 2);
+            addMaiden(b, spouseSpacing / 2);
 
-
-            addMaiden(a, -spouseSpacing/2);
-            addMaiden(b, spouseSpacing/2);
-
-
-            el.append("text").attr("x",-spouseSpacing/2).attr("y",circleRadius+36).attr("text-anchor","middle").text(a.name);
-            if(a.patronymic) el.append("text").attr("x",-spouseSpacing/2).attr("y",circleRadius+52).attr("text-anchor","middle").text(a.patronymic);
-            el.append("text").attr("x",spouseSpacing/2).attr("y",circleRadius+36).attr("text-anchor","middle").text(b.name);
-            if(b.patronymic) el.append("text").attr("x",spouseSpacing/2).attr("y",circleRadius+52).attr("text-anchor","middle").text(b.patronymic);
+            el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
+            if (a.patronymic) el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
+            el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(b.name);
+            if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
           } else {
-
             const a = sp[0];
 
-            el.append("circle").attr("class", a.gender==="male"?"male":"female").attr("r",circleRadius);
-
-
-            el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("text-anchor","middle").text(surnameDisplay(a));
-
-
+            el.append("circle").attr("class", a.gender === "male" ? "male" : "female").attr("r", circleRadius);
+            el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
             addMaiden(a, 0);
-
-
-            el.append("text").attr("x",0).attr("y",circleRadius+36).attr("text-anchor","middle").text(a.name);
-            if(a.patronymic) el.append("text").attr("x",0).attr("y",circleRadius+52).attr("text-anchor","middle").text(a.patronymic);
-          }
-
-
-          if (d.data.isReference) {
-            el.append("text").attr("y", circleRadius+48).attr("text-anchor","middle").attr("fill","#888").attr("font-style","italic").text("(уже отображено)");
-
-
-
-
-
+            el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
+            if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
           }
         });
       });
