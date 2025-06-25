@@ -1,6 +1,6 @@
 {
   "marinichev": [
-    { "id": "M1", "name": "Пётр", "surname": "Мариничев", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "male", "spouses": ["M2"], "parents": [] },
+    { "id": "M1", "name": "Пётр", "surname": "Мариничев", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "male", "spouses": ["M2"], "parents": ["M15"] },
     { "id": "M2", "name": "Галина", "surname": "Мариничева", "maidenSurname": "Рыбасова", "patronymic": "Александровна", "birthYear": 1953, "gender": "female", "spouses": ["M1"], "parents": [] },
     { "id": "M3", "name": "Александр", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1975, "gender": "male", "spouses": ["M4"], "parents": ["M1", "M2"] },
     { "id": "M4", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1978, "gender": "female", "spouses": ["M3"], "parents": [] },
