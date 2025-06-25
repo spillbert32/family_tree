@@ -1,22 +1,22 @@
 {
   "people": [
-    { "id": "p1", "name": "Пётр", "surname": "Мариничев", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "male", "spouses": ["p2"], "parents": [], "treeId": "tree1" },
-    { "id": "p2", "name": "Галина", "surname": "Мариничева", "maidenSurname": "Рыбасова", "patronymic": "Александровна", "birthYear": 1953, "gender": "female", "spouses": ["p1"], "parents": [], "treeId": "tree1" },
-    { "id": "p3", "name": "Александр", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1975, "gender": "male", "spouses": ["p4"], "parents": ["p1", "p2"], "treeId": "tree1" },
-    { "id": "p4", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1978, "gender": "female", "spouses": ["p3"], "parents": [], "treeId": "tree1" },
-    { "id": "p5", "name": "Олег", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1978, "gender": "male", "spouses": ["p6"], "parents": ["p1", "p2"], "treeId": "tree1" },
-    { "id": "p6", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["p5"], "parents": ["p15", "p16"], "treeId": "tree1" },
-    { "id": "p7", "name": "Дмитрий", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1983, "gender": "male", "spouses": ["p8"], "parents": ["p1", "p2"], "treeId": "tree1" },
-    { "id": "p8", "name": "Паля", "surname": "Мариничева", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1985, "gender": "female", "spouses": ["p7"], "parents": [], "treeId": "tree1" },
-    { "id": "p9", "name": "Владислав", "surname": "Мариничев", "patronymic": "Олегович", "birthYear": 2002, "gender": "male", "spouses": [], "parents": ["p5", "p6"], "treeId": "tree1" },
-    { "id": "p10", "name": "Полина", "surname": "Мариничева", "patronymic": "Олеговна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["p5", "p6"], "treeId": "tree1" },
-    { "id": "p11", "name": "Арсений", "surname": "Мариничев", "patronymic": "Дмитриевич", "birthYear": 2007, "gender": "male", "spouses": [], "parents": ["p7", "p8"], "treeId": "tree1" },
-    { "id": "p12", "name": "Виктория", "surname": "Мариничева", "patronymic": "Дмитриевна", "birthYear": 2010, "gender": "female", "spouses": [], "parents": ["p7", "p8"], "treeId": "tree1" },
-    { "id": "p13", "name": "Евгений", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["p3", "p4"], "treeId": "tree1" },
-    { "id": "p14", "name": "Иван", "surname": "Кулаков", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["p3", "p4"], "treeId": "tree1" },
-    
-    { "id": "p15", "name": "Сергей", "surname": "Шаповалов", "patronymic": "", "birthYear": 1955, "gender": "male", "spouses": ["p16"], "parents": [], "treeId": "tree2" },
-    { "id": "p16", "name": "Галина", "surname": "Шаповалова", "maidenSurname": "Титянина", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1957, "gender": "female", "spouses": ["p15"], "parents": [], "treeId": "tree2" },
-    { "id": "p17", "name": "Михаил", "surname": "Шаповалов", "patronymic": "Сергеевич", "birthYear": 1975, "gender": "male", "spouses": [], "parents": ["p15", "p16"], "treeId": "tree2" }
+    { "id": "M1", "name": "Пётр", "surname": "Мариничев", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "male", "spouses": ["M2"], "parents": [], "treeId": "tree1" },
+    { "id": "M2", "name": "Галина", "surname": "Мариничева", "maidenSurname": "Рыбасова", "patronymic": "Александровна", "birthYear": 1953, "gender": "female", "spouses": ["M1"], "parents": [], "treeId": "tree1" },
+    { "id": "M3", "name": "Александр", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1975, "gender": "male", "spouses": ["M4"], "parents": ["M1", "M2"], "treeId": "tree1" },
+    { "id": "M4", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1978, "gender": "female", "spouses": ["M3"], "parents": [], "treeId": "tree1" },
+    { "id": "M5", "name": "Олег", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1978, "gender": "male", "spouses": ["M6"], "parents": ["M1", "M2"], "treeId": "tree1" },
+    { "id": "M6", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["M5"], "parents": ["S1", "S2"], "treeId": "tree1" },
+    { "id": "M7", "name": "Дмитрий", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1983, "gender": "male", "spouses": ["M8"], "parents": ["M1", "M2"], "treeId": "tree1" },
+    { "id": "M8", "name": "Паля", "surname": "Мариничева", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1985, "gender": "female", "spouses": ["M7"], "parents": [], "treeId": "tree1" },
+    { "id": "M9", "name": "Владислав", "surname": "Мариничев", "patronymic": "Олегович", "birthYear": 2002, "gender": "male", "spouses": [], "parents": ["M5", "M6"], "treeId": "tree1" },
+    { "id": "M10", "name": "Полина", "surname": "Мариничева", "patronymic": "Олеговна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["M5", "M6"], "treeId": "tree1" },
+    { "id": "M11", "name": "Арсений", "surname": "Мариничев", "patronymic": "Дмитриевич", "birthYear": 2007, "gender": "male", "spouses": [], "parents": ["M7", "M8"], "treeId": "tree1" },
+    { "id": "M12", "name": "Виктория", "surname": "Мариничева", "patronymic": "Дмитриевна", "birthYear": 2010, "gender": "female", "spouses": [], "parents": ["M7", "M8"], "treeId": "tree1" },
+    { "id": "M13", "name": "Евгений", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["M3", "M4"], "treeId": "tree1" },
+    { "id": "M14", "name": "Иван", "surname": "Кулаков", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 2010, "gender": "male", "spouses": [], "parents": ["M3", "M4"], "treeId": "tree1" },
+
+    { "id": "S1", "name": "Сергей", "surname": "Шаповалов", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["S2"], "parents": [], "treeId": "tree2" },
+    { "id": "S2", "name": "Галина", "surname": "Шаповалова", "maidenSurname": "Титянина", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1957, "gender": "female", "spouses": ["S1"], "parents": [], "treeId": "tree2" },
+    { "id": "S3", "name": "Михаил", "surname": "Шаповалов", "patronymic": "Сергеевич", "birthYear": 1975, "gender": "male", "spouses": [], "parents": ["S1", "S2"], "treeId": "tree2" }
   ]
 }
