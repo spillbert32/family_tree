@@ -1,193 +1,167 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Два дерева супругов</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; overflow: hidden; }
-    .link { fill: none; stroke: #999; stroke-width: 2px; }
-    .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
-    .spouse-link { stroke: #555; stroke-width: 3px; stroke-opacity: 0.6; }
-    .node circle { stroke: #555; stroke-width: 2px; cursor: pointer; }
-    .male { fill: #5dade2; }
-    .female { fill: #f1948a; }
-    text { font-size: 12px; user-select: none; pointer-events: none; }
-    .surname { font-weight: bold; }
-    .maiden { font-style: italic; font-size: 11px; fill: #666; }
-  </style>
+<meta charset="UTF-8">
+<title>Два дерева супругов</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  body { font-family: Arial; overflow: hidden; }
+  .link { fill: none; stroke: #999; stroke-width: 2px; }
+  .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
+  .spouse-link { stroke: #555; stroke-width: 3px; stroke-opacity: 0.6; }
+  .node circle { stroke: #555; stroke-width: 2px; cursor: pointer; }
+  .male { fill: #5dade2; }
+  .female { fill: #f1948a; }
+  text { font-size: 12px; pointer-events: none; }
+  .surname { font-weight: bold; }
+  .maiden { font-style: italic; font-size: 11px; fill: #666; }
+</style>
 </head>
 <body>
-  <svg width="1800" height="1000"></svg>
+<svg width="1800" height="1000"></svg>
 
-  <script>
-  let currentTransform = null;
+<script>
+let currentTransform = null;
 
-  fetch("db.json")
-    .then(r => r.json())
-    .then(data => {
-      const personMap = new Map(data.people.map(p => [p.id, p]));
+fetch("db.json")
+.then(r => r.json())
+.then(data => {
+  const pm = new Map(data.people.map(p => [p.id, p]));
 
-      // Построение всех корней (пары без родителей)
-      function buildRoots(people) {
-        const pairsMap = new Map();
+  function buildTree(people) {
+    const pairs = new Map();
+    people.forEach(p => {
+      (p.spouses?.length ? p.spouses : [p.id]).forEach(s => {
+        const k = [p.id, s].sort().join("_");
+        if (!pairs.has(k)) pairs.set(k, { spouses: [...new Set([p.id, s])], children: [] });
+      });
+    });
+    people.forEach(p => {
+      if (p.parents?.length) {
+        const k = [...p.parents].sort().join("_");
+        if (pairs.has(k)) pairs.get(k).children.push(p.id);
+      }
+    });
+    const roots = [];
+    const hasParents = id => pm.get(id).parents?.length;
+    pairs.forEach((v, k) => {
+      if (v.spouses.some(id => !hasParents(id))) roots.push({ key: k, ...v });
+    });
+    const used = new Set();
+    function buildNode(pair) {
+      if (!pair) return null;
+      if (used.has(pair.key)) return { ...pair, children: null, isReference: true };
+      used.add(pair.key);
+      const kids = pair.children.map(cid => {
+        const c = pm.get(cid);
+        const ck = [...new Set([c.id, ...(c.spouses||[])])].sort().join("_");
+        return buildNode(pairs.get(ck));
+      }).filter(Boolean);
+      return { ...pair, children: kids, isReference: false };
+    }
+    return roots.map(buildNode).filter(Boolean);
+  }
 
-        people.forEach(p => {
-          (p.spouses?.length ? p.spouses : [p.id]).forEach(spId => {
-            const key = [p.id, spId].sort().join("_");
-            if (!pairsMap.has(key)) pairsMap.set(key, { spouses: [p.id, spId].filter((v,i,a)=>a.indexOf(v)==i), children: [] });
+  const allRoots = buildTree(data.people);
+  const husbandTree = allRoots.find(r => r.spouses.some(id => pm.get(id).gender==="male")) || allRoots[0];
+  const usedKeys = new Set();
+  function mark(t) { if (!t) return; usedKeys.add(t.key); t.children?.forEach(mark); }
+  mark(husbandTree);
+  const wifeTreeRaw = allRoots.find(r => r !== husbandTree && r.spouses.some(id => pm.get(id).gender==="female"));
+  function filterTree(pair) {
+    if (!pair || usedKeys.has(pair.key)) return null;
+    const kids = pair.children.map(filterTree).filter(Boolean);
+    return { ...pair, children: kids };
+  }
+  const wifeTree = filterTree(wifeTreeRaw);
+
+  render(husbandTree, wifeTree);
+
+  function toggle(d) {
+    if (d.children) { d._children = d.children; d.children = null; }
+    else if (d._children) { d.children = d._children; d._children = null; }
+    render(husbandTree, wifeTree);
+  }
+
+  function render(h, w) {
+    const svg = d3.select("svg"); svg.selectAll("*").remove();
+    const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
+    svg.call(d3.zoom().scaleExtent([0.5,3]).on("zoom", e => {
+      g.attr("transform", e.transform);
+      currentTransform = e.transform;
+    }));
+
+    const dx=300, dy=300, r=28, offH=0, offW=900;
+
+    function drawTree(root, offset) {
+      if (!root) return null;
+      const d3root = d3.hierarchy(root, d => d.children);
+      d3.tree().nodeSize([dx,dy])(d3root);
+
+      g.selectAll(`.link${offset}`)
+       .data(d3root.links())
+       .join("path")
+       .attr("class", d => d.target.data.isReference ? "link link-dashed" : "link")
+       .attr("d", d3.linkVertical().x(d=>d.x+offset).y(d=>d.y));
+
+      const nodes = g.selectAll(`.node${offset}`)
+        .data(d3root.descendants(), d=>d.data.key)
+        .join(ent => ent.append("g")
+           .attr("class","node")
+           .attr("transform", d=>`translate(${d.x+offset},${d.y})`)
+           .on("click", (_,d)=>toggle(d.data))
+        );
+
+      nodes.each(function(d){
+        const el = d3.select(this), sp = d.data.spouses.map(id=>pm.get(id));
+        const addMaiden=(p,x)=>{ if(p.gender==="female" && p.maidenSurname && p.maidenSurname!==p.surname)
+          el.append("text").attr("class","maiden").attr("x",x).attr("y",r+16).attr("text-anchor","middle")
+            .text(`(дев. ${p.maidenSurname})`);
+        };
+        if(sp.length===2){
+          const [a,b] = sp;
+          el.append("circle").attr("class",a.gender==="male"?"male":"female").attr("r",r).attr("cx",-r*1.5);
+          el.append("circle").attr("class",b.gender==="male"?"male":"female").attr("r",r).attr("cx",r*1.5);
+          el.append("text").attr("class","surname").attr("x",-r*1.5).attr("y",-r-10").attr("text-anchor","middle").text(a.surname);
+          el.append("text").attr("class","surname").attr("x",r*1.5).attr("y",-r-10").attr("text-anchor","middle").text(b.surname);
+          addMaiden(a,-r*1.5); addMaiden(b,r*1.5);
+          [a,b].forEach((p,i)=>{
+            const x0 = i===0 ? -r*1.5 : r*1.5;
+            el.append("text").attr("x",x0).attr("y",r+20).attr("text-anchor","middle").text(p.name);
           });
-        });
-
-        people.forEach(p => {
-          if (p.parents?.length) {
-            const key = [...p.parents].sort().join("_");
-            const entry = pairsMap.get(key);
-            if (!entry) pairsMap.set(key, { spouses: [...p.parents], children: [p.id] });
-            else entry.children.push(p.id);
-          }
-        });
-
-        const hasParents = id => personMap.get(id)?.parents?.length > 0;
-        const roots = [];
-        pairsMap.forEach((pair, key) => {
-          if (pair.spouses.some(id => !hasParents(id))) {
-            roots.push({ key, spouses: pair.spouses, children: pair.children, isReference: false });
-          }
-        });
-
-        return roots;
-      }
-
-      // Построение рекурсивного дерева от пары
-      function buildTree(rootPair, used = new Set()) {
-        if (!rootPair) return null;
-        if (used.has(rootPair.key)) return { ...rootPair, isReference: true, children: null };
-        used.add(rootPair.key);
-
-        const children = (rootPair.children || []).map(cid => {
-          const p = personMap.get(cid);
-          const childKey = [...new Set([p.id, ...(p.spouses || [])])].sort().join("_");
-          return buildTree(allRoots.find(r => r.key === childKey), used);
-        }).filter(n => n);
-
-        return { ...rootPair, children };
-      }
-
-      // Фильтрация дерева для жены — чтобы не включать уже использованных
-      function filterTree(tree, usedKeys = new Set()) {
-        if (!tree) return null;
-        if (usedKeys.has(tree.key)) return null;
-        usedKeys.add(tree.key);
-        const children = (tree.children || []).map(c => filterTree(c, usedKeys)).filter(n => n);
-        return { ...tree, children };
-      }
-
-      const allRoots = buildRoots(data.people);
-      const husbandPair = allRoots.find(r => r.spouses.some(id => personMap.get(id).gender === "male" && !personMap.get(id).parents.length));
-      const wifePair = allRoots.find(r => r !== husbandPair && r.spouses.some(id => personMap.get(id).gender === "female" && !personMap.get(id).parents.length));
-
-      const husbandTree = buildTree(husbandPair);
-      const usedKeys = new Set();
-      function markUsed(t) { if (!t) return; usedKeys.add(t.key); (t.children||[]).forEach(markUsed); }
-      markUsed(husbandTree);
-      const wifeTree = filterTree(buildTree(wifePair), usedKeys);
-
-      render(husbandTree, wifeTree);
-
-      function toggle(d) {
-        if (d.children) { d._children = d.children; d.children = null; }
-        else if (d._children) { d.children = d._children; d._children = null; }
-        render(husbandTree, wifeTree);
-      }
-
-      function render(treeH, treeW) {
-        const svg = d3.select("svg");
-        svg.selectAll("*").remove();
-        const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
-        svg.call(d3.zoom().scaleExtent([0.5,3]).on("zoom", e => {
-          g.attr("transform", e.transform);
-          currentTransform = e.transform;
-        }));
-
-        const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
-        const offsH = 0, offsW = 900;
-
-        const rootH = d3.hierarchy(treeH, d => d.children);
-        d3.tree().nodeSize([dx,dy])(rootH);
-        const rootW = treeW ? d3.hierarchy(treeW, d => d.children) : null;
-        if (rootW) d3.tree().nodeSize([dx,dy])(rootW);
-
-        function drawLinks(root, offs) {
-          if (!root) return;
-          g.selectAll(".link"+offs)
-           .data(root.links()).join("path")
-           .attr("class", d => d.target.data.isReference ? "link link-dashed" : "link")
-           .attr("d", d3.linkVertical().x(d=>d.x+offs).y(d=>d.y));
+        } else {
+          const p = sp[0];
+          el.append("circle").attr("class",p.gender==="male"?"male":"female").attr("r",r);
+          el.append("text").attr("class","surname").attr("y",-r-10").attr("text-anchor","middle").text(p.surname);
+          addMaiden(p,0);
+          el.append("text").attr("x",0).attr("y",r+20).attr("text-anchor","middle").text(p.name);
         }
+      });
 
-        drawLinks(rootH, offsH);
-        drawLinks(rootW, offsW);
+      return d3root;
+    }
 
-        function drawNodes(root, offs) {
-          if (!root) return;
-          const sel = g.selectAll(".node"+offs)
-           .data(root.descendants(), d=>d.data.key)
-           .join(ent => ent.append("g")
-             .attr("class","node")
-             .attr("transform", d=>`translate(${d.x+offs},${d.y})`)
-             .on("click", (_,d)=>{toggle(d.data);} ));
+    const dH = drawTree(h, offH);
+    const dW = drawTree(w, offW);
 
-          sel.each(function(d){
-            const el = d3.select(this), sp = d.data.spouses;
-            const surnameDisplay = p => p.surname;
-            const addMaiden = (p,x) => { if (p.gender==="female" && p.maidenSurname && p.maidenSurname!==p.surname) {
-              el.append("text").attr("class","maiden").attr("x",x).attr("y",circleRadius+16).attr("text-anchor","middle")
-                .text(`(дев. ${p.maidenSurname})`);
-            }};
-            if (sp.length===2) {
-              const [a,b] = sp.map(id=>personMap.get(id));
-              el.append("circle").attr("class",a.gender==="male"?"male":"female").attr("r",circleRadius).attr("cx",-spouseSpacing/2);
-              el.append("circle").attr("class",b.gender==="male"?"male":"female").attr("r",circleRadius).attr("cx",spouseSpacing/2);
-              el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("x",-spouseSpacing/2).attr("text-anchor","middle").text(surnameDisplay(a));
-              el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("x",spouseSpacing/2).attr("text-anchor","middle").text(surnameDisplay(b));
-              addMaiden(a, -spouseSpacing/2); addMaiden(b, spouseSpacing/2);
-              [a,b].forEach((p,i)=>{
-                const x0 = i===0 ? -spouseSpacing/2 : spouseSpacing/2;
-                el.append("text").attr("x",x0).attr("y",circleRadius+36).attr("text-anchor","middle").text(p.name);
-                if (p.patronymic) el.append("text").attr("x",x0).attr("y",circleRadius+52).attr("text-anchor","middle").text(p.patronymic);
-              });
-            } else {
-              const a = personMap.get(sp[0]);
-              el.append("circle").attr("class",a.gender==="male"?"male":"female").attr("r",circleRadius);
-              el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("text-anchor","middle").text(surnameDisplay(a));
-              addMaiden(a,0);
-              el.append("text").attr("x",0).attr("y",circleRadius+36).attr("text-anchor","middle").text(a.name);
-              if (a.patronymic) el.append("text").attr("x",0).attr("y",circleRadius+52).attr("text-anchor","middle").text(a.patronymic);
-            }
-          });
+    if(dH && dW){
+      const mH = new Map(), mW = new Map();
+      dH.descendants().forEach(d=>d.data.spouses.forEach(id=>mH.set(id,d)));
+      dW.descendants().forEach(d=>d.data.spouses.forEach(id=>mW.set(id,d)));
+      mH.forEach((nH, id) => {
+        const nW = mW.get(id);
+        if(nW){
+          g.append("line").attr("class","spouse-link")
+           .attr("x1",nH.x+offH).attr("y1",nH.y)
+           .attr("x2",nW.x+offW).attr("y2",nW.y);
         }
+      });
+    }
+  }
 
-        drawNodes(rootH, offsH);
-        drawNodes(rootW, offsW);
+})
+.catch(console.error);
 
-        // рисуем линии супругов между деревьями
-        const mapH = new Map(); rootH.descendants().forEach(d=>d.data.spouses.forEach(id=>mapH.set(id,d)));
-        if (rootW) {
-          const mapW = new Map(); rootW.descendants().forEach(d=>d.data.spouses.forEach(id=>mapW.set(id,d)));
-          for (const [id, dH] of mapH.entries()) {
-            const dW = mapW.get(id);
-            if (dW) {
-              g.append("line").attr("class","spouse-link")
-                .attr("x1", dH.x + offsH).attr("y1", dH.y)
-                .attr("x2", dW.x + offsW).attr("y2", dW.y);
-            }
-          }
-        }
-      }
-
-    })
-    .catch(console.error);
-  </script>
+</script>
 </body>
 </html>
