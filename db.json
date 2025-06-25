@@ -18,6 +18,6 @@
     { "id": "S1", "name": "Сергей", "surname": "Шаповалов", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["S2"], "parents": [], "treeId": "tree2" },
     { "id": "S2", "name": "Галина", "surname": "Шаповалова", "maidenSurname": "Титянина", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1957, "gender": "female", "spouses": ["S1"], "parents": [], "treeId": "tree2" },
     { "id": "S3", "name": "Михаил", "surname": "Шаповалов", "patronymic": "Сергеевич", "birthYear": 1975, "gender": "male", "spouses": [], "parents": ["S1", "S2"], "treeId": "tree2" },
-    { "id": "S4", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["M5"], "parents": ["S1", "S2"], "treeId": "tree2" },
+    { "id": "S4", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["M5"], "parents": ["S1", "S2"], "treeId": "tree2" }
   ]
 }
