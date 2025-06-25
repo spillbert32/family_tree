@@ -11,7 +11,7 @@
     { "id": "M6", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["M5"], "parents": ["S1", "S2"] },
     { "id": "M7", "name": "Дмитрий", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1983, "gender": "male", "spouses": ["M8"], "parents": ["M1", "M2"] },
     { "id": "M8", "name": "Паля", "surname": "Мариничева", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1985, "gender": "female", "spouses": ["M7"], "parents": [] },
-    { "id": "M9", "name": "Владислав", "surname": "Мариничев", "patronymic": "Олегович", "birthYear": 2002, "gender": "male", "spouses": [], "parents": ["M5", "M6"] },
+    { "id": "M9", "name": "Владислав", "surname": "Мариничев", "patronymic": "Олегович", "birthYear": 2002, "gender": "male", "spouses": [], "parents": ["M5", "M6", "M15", "M17"] },
     { "id": "M10", "name": "Полина", "surname": "Мариничева", "patronymic": "Олеговна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["M5", "M6"] },
     { "id": "M11", "name": "Арсений", "surname": "Мариничев", "patronymic": "Дмитриевич", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M7", "M8"] },
     { "id": "M12", "name": "Виктория", "surname": "Мариничева", "patronymic": "Дмитриевна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["M7", "M8"] },
