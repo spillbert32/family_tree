@@ -2,13 +2,12 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо с девичьими фамилиями и toggle + перекрестные связи</title>
+  <title>Родовое древо с девичьими фамилиями и toggle</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; overflow: hidden; }
     .link { fill: none; stroke: #999; stroke-width: 2px; }
     .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
-    .cross-link { fill: none; stroke: orange; stroke-width: 2px; stroke-dasharray: 6 3; }
     .node circle { stroke: #555; stroke-width: 2px; cursor: pointer; }
     .male { fill: #5dade2; }
     .female { fill: #f1948a; }
@@ -20,13 +19,6 @@
 <body>
   <svg width="1800" height="1000"></svg>
   <script>
-    // Здесь определяем массив дополнительных перекрестных связей (пример)
-    // Нужно заменить id на реальные id из твоих данных
-    const crossLinks = [
-      { sourceId: "2_3", targetId: "5_6" }, // пример: связь между парой супругов 2_3 и 5_6
-      { sourceId: "7", targetId: "4" }      // пример связи между отдельными узлами
-    ];
-
     fetch("db.json")
       .then(res => res.json())
       .then(data => {
@@ -39,6 +31,7 @@
       const personMap = new Map(people.map(p => [p.id, p]));
       const pairsMap = new Map();
 
+      // Создаём пары супругов
       people.forEach(p => {
         if (p.spouses?.length) {
           p.spouses.forEach(spId => {
@@ -49,6 +42,8 @@
           pairsMap.set(p.id, { spouses: [p.id], children: [] });
         }
       });
+
+      // Добавляем детей к парам супругов
       people.forEach(p => {
         if (p.parents?.length) {
           const key = [...p.parents].sort().join("_");
@@ -58,34 +53,40 @@
             pairsMap.get(key).children.push(p.id);
         }
       });
-      const hasParents = id => personMap.get(id)?.parents?.length > 0;
-      const roots = [];
-      pairsMap.forEach((pair, key) => {
-        if (pair.spouses.some(id => !hasParents(id))) {
-          roots.push({ key, spouses: pair.spouses, children: pair.children });
-        }
-      });
 
-      const used = new Set();
-      function buildNode(key) {
-        if (used.has(key)) {
-          return { id: key, spouses: pairsMap.get(key).spouses.map(i=>personMap.get(i)), children: null, isReference: true };
+      // Функция проверки, есть ли у человека родители
+      const hasParents = id => personMap.get(id)?.parents?.length > 0;
+
+      // Находим корневых людей — у которых нет родителей
+      const rootsIds = people.filter(p => !hasParents(p.id)).map(p => p.id);
+
+      const usedPairs = new Set();
+
+      // Рекурсивно строим дерево от человека, находя его пару и детей
+      function buildNodeByPerson(id) {
+        let pairKey = null;
+        for (const key of pairsMap.keys()) {
+          if (pairsMap.get(key).spouses.includes(id)) {
+            pairKey = key;
+            break;
+          }
         }
-        used.add(key);
-        const { spouses, children } = pairsMap.get(key);
+        if (!pairKey) return null;
+        if (usedPairs.has(pairKey)) {
+          return { id: pairKey, spouses: pairsMap.get(pairKey).spouses.map(i => personMap.get(i)), children: null, isReference: true };
+        }
+        usedPairs.add(pairKey);
+        const pair = pairsMap.get(pairKey);
         return {
-          id: key,
-          spouses: spouses.map(i => personMap.get(i)),
-          children: children.map(cid => {
-            const ch = personMap.get(cid);
-            const childKey = [...new Set([ch.id, ...(ch.spouses||[])])].sort().join("_");
-            return buildNode(childKey);
-          }),
+          id: pairKey,
+          spouses: pair.spouses.map(i => personMap.get(i)),
+          children: pair.children.map(cid => buildNodeByPerson(cid)),
           isReference: false
         };
       }
 
-      return roots.map(r => buildNode(r.key));
+      // Строим массив корней для дерева
+      return rootsIds.map(id => buildNodeByPerson(id)).filter(n => n !== null);
     }
 
     function toggle(d) {
@@ -106,33 +107,12 @@
         d3.tree().nodeSize([dx, dy])(root);
         const xOff = rootIndex * 900;
 
-        // Отрисовка основных связей дерева
         g.selectAll(".link"+rootIndex)
           .data(root.links())
           .join("path")
           .attr("class", d => d.target.data.isReference ? "link link-dashed" : "link")
           .attr("d", d3.linkVertical().x(d=>d.x+xOff).y(d=>d.y));
 
-        // Карта id -> узел для координат
-        const nodeById = new Map();
-        root.descendants().forEach(d => nodeById.set(d.data.id, d));
-
-        // Отрисовка дополнительных перекрестных связей
-        g.selectAll(".cross-link"+rootIndex)
-          .data(crossLinks)
-          .join("path")
-          .attr("class", "cross-link")
-          .attr("d", d => {
-            const source = nodeById.get(d.sourceId);
-            const target = nodeById.get(d.targetId);
-            if (!source || !target) return null;
-            return d3.linkVertical()({
-              source: {x: source.x + xOff, y: source.y},
-              target: {x: target.x + xOff, y: target.y}
-            });
-          });
-
-        // Отрисовка узлов
         const nodes = g.selectAll(".node"+rootIndex)
           .data(root.descendants(), d=>d.data.id)
           .join(enter => enter.append("g")
