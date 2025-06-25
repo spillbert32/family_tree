@@ -2,12 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо с девичьими фамилиями и toggle</title>
+  <title>Родовое древо с девичьими фамилиями и toggle + перекрестные связи</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; overflow: hidden; }
     .link { fill: none; stroke: #999; stroke-width: 2px; }
     .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
+    .cross-link { fill: none; stroke: orange; stroke-width: 2px; stroke-dasharray: 6 3; }
     .node circle { stroke: #555; stroke-width: 2px; cursor: pointer; }
     .male { fill: #5dade2; }
     .female { fill: #f1948a; }
@@ -19,7 +20,12 @@
 <body>
   <svg width="1800" height="1000"></svg>
   <script>
-    let currentTransform = null; // Хранит текущую трансформацию zoom/pan
+    // Здесь определяем массив дополнительных перекрестных связей (пример)
+    // Нужно заменить id на реальные id из твоих данных
+    const crossLinks = [
+      { sourceId: "2_3", targetId: "5_6" }, // пример: связь между парой супругов 2_3 и 5_6
+      { sourceId: "7", targetId: "4" }      // пример связи между отдельными узлами
+    ];
 
     fetch("db.json")
       .then(res => res.json())
@@ -90,17 +96,8 @@
     function render(treeData) {
       const svg = d3.select("svg").attr("pointer-events", "all");
       svg.selectAll("*").remove();
-
-      // Восстанавливаем трансформацию, если есть, иначе начальная позиция
-      const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
-
-      svg.call(d3.zoom()
-        .scaleExtent([0.5,3])
-        .on("zoom", e => {
-          g.attr("transform", e.transform);
-          currentTransform = e.transform; // Обновляем сохранённую трансформацию при зуме/пане
-        })
-      );
+      const g = svg.append("g").attr("transform", "translate(100,50)");
+      svg.call(d3.zoom().scaleExtent([0.5,3]).on("zoom", e => g.attr("transform", e.transform)));
 
       const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
 
@@ -109,23 +106,39 @@
         d3.tree().nodeSize([dx, dy])(root);
         const xOff = rootIndex * 900;
 
+        // Отрисовка основных связей дерева
         g.selectAll(".link"+rootIndex)
           .data(root.links())
           .join("path")
           .attr("class", d => d.target.data.isReference ? "link link-dashed" : "link")
           .attr("d", d3.linkVertical().x(d=>d.x+xOff).y(d=>d.y));
 
+        // Карта id -> узел для координат
+        const nodeById = new Map();
+        root.descendants().forEach(d => nodeById.set(d.data.id, d));
+
+        // Отрисовка дополнительных перекрестных связей
+        g.selectAll(".cross-link"+rootIndex)
+          .data(crossLinks)
+          .join("path")
+          .attr("class", "cross-link")
+          .attr("d", d => {
+            const source = nodeById.get(d.sourceId);
+            const target = nodeById.get(d.targetId);
+            if (!source || !target) return null;
+            return d3.linkVertical()({
+              source: {x: source.x + xOff, y: source.y},
+              target: {x: target.x + xOff, y: target.y}
+            });
+          });
+
+        // Отрисовка узлов
         const nodes = g.selectAll(".node"+rootIndex)
           .data(root.descendants(), d=>d.data.id)
           .join(enter => enter.append("g")
             .attr("class","node")
             .attr("transform", d=>`translate(${d.x+xOff},${d.y})`)
-            .on("click", (_,d)=> { 
-              toggle(d.data);
-              // сохраняем текущую трансформацию перед перерисовкой
-              currentTransform = g.attr("transform");
-              render(treeData);
-            })
+            .on("click", (_,d)=> { toggle(d.data); render(treeData); })
           );
 
         nodes.each(function(d) {
