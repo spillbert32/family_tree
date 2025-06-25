@@ -1,10 +1,32 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8" />Add commentMore actions
   <title>Родовое древо с выбором семьи</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </head>
 <body>
   <div id="buttons">
@@ -12,9 +34,6 @@
     <button id="btnShapovalov">Шаповаловы</button>
   </div>
   <svg width="1800" height="1000"></svg>
-
-  <!-- Tooltip для отображения информации -->
-  <div id="tooltip" class="tooltip"></div>
 
   <script>
     let currentTransform = null;
@@ -106,31 +125,6 @@
       }
     }
 
-    const tooltip = d3.select("#tooltip");
-
-    function showTooltip(event, person) {
-      if (!person) return;
-      let html = `
-        <strong>${person.name} ${person.patronymic ? person.patronymic + ' ' : ''}${person.surname}</strong><br/>
-        Год рождения: ${person.birthYear || 'неизвестно'}<br/>
-        Пол: ${person.gender === 'male' ? 'Мужской' : 'Женский'}
-      `;
-      tooltip.html(html)
-        .style("opacity", 1)
-        .style("left", (event.pageX + 10) + "px")
-        .style("top", (event.pageY + 10) + "px");
-    }
-
-    function moveTooltip(event) {
-      tooltip
-        .style("left", (event.pageX + 10) + "px")
-        .style("top", (event.pageY + 10) + "px");
-    }
-
-    function hideTooltip() {
-      tooltip.style("opacity", 0);
-    }
-
     function render(treeData) {
       const svg = d3.select("svg").attr("pointer-events", "all");
       svg.selectAll("*").remove();
@@ -211,12 +205,6 @@
             el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
             if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
           }
-
-          // Навешиваем tooltip события на узел (группу)
-          d3.select(this)
-            .on("mouseenter", (event) => showTooltip(event, sp[0]))
-            .on("mousemove", (event) => moveTooltip(event))
-            .on("mouseleave", () => hideTooltip());
         });
       });
     }
