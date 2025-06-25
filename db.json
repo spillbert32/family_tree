@@ -15,7 +15,8 @@
     { "id": "M13", "name": "Евгений", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M3", "M4"] },
     { "id": "M14", "name": "Иван", "surname": "Кулаков", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M3", "M4"] },
     { "id": "M15", "name": "Логин", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1920, "gender": "male", "spouses": [], "parents": [] },
-    { "id": "M16", "name": "Александр", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 1950, "gender": "male", "spouses": [], "parents": ["M15"] }
+    { "id": "M16", "name": "Александр", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 1950, "gender": "male", "spouses": ["M17"], "parents": [] },
+    { "id": "M17", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "female", "spouses": ["M15"], "parents": [] }
   ],
   "shapovalov": [
     { "id": "S1", "name": "Сергей", "surname": "Шаповалов", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["S2"], "parents": [] },
