@@ -2,15 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Родовое древо с девичьими фамилиями и toggle</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; overflow: hidden; }
-    .link { fill: none; stroke: #999; stroke-width: 2px; }<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <title>Родовое древо с девичьими фамилиями и toggle</title>
+  <title>Родовое древо с девичьими фамилиями и toggle и выбором дерева</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; overflow: hidden; }
@@ -23,45 +15,52 @@
     .surname { font-weight: bold; }
     .maiden { font-style: italic; font-size: 11px; fill: #666; }
     #buttons {
-      margin: 10px;
       position: fixed;
       top: 10px;
       left: 10px;
-      z-index: 10;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 6px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      z-index: 1000;
     }
     #buttons button {
-      margin-right: 10px;
+      margin-right: 6px;
       padding: 6px 12px;
-      font-size: 14px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div id="buttons">
-    <button id="btnTree1">Показать древо №1</button>
-    <button id="btnTree2">Показать древо №2</button>
-    <button id="btnAll">Показать все деревья</button>
+    <button id="btnAll">Все деревья</button>
+    <button id="btnTree1">Древо 1</button>
+    <button id="btnTree2">Древо 2</button>
   </div>
-
   <svg width="1800" height="1000"></svg>
 
   <script>
     let currentTransform = null; // Хранит текущую трансформацию zoom/pan
-    let allTrees = []; // Массив всех деревьев
-    let currentTrees = []; // Деревья, которые сейчас отображаются
+    let allPeople = []; // Все данные из db.json
+    let currentTrees = []; // Текущие отображаемые деревья
 
-    // Загружаем данные из JSON
+    // Загрузка данных
     fetch("db.json")
       .then(res => res.json())
       .then(data => {
-        allTrees = buildTree(data.people); // Строим массив деревьев
-        currentTrees = allTrees; // По умолчанию показываем все
+        allPeople = data.people;
+        currentTrees = buildTree(allPeople); // Построение всех деревьев
         render(currentTrees);
       })
       .catch(err => console.error("Ошибка загрузки db.json:", err));
 
-    // Построение дерева из массива людей (как было)
+    // Фильтрация людей по treeId
+    function filterPeopleByTree(people, treeId) {
+      return people.filter(p => p.treeId === treeId);
+    }
+
+    // Построение дерева из массива людей
     function buildTree(people) {
       const personMap = new Map(people.map(p => [p.id, p]));
       const pairsMap = new Map();
@@ -91,8 +90,8 @@
       });
 
       const hasParents = id => personMap.get(id)?.parents?.length > 0;
-
       const roots = [];
+
       pairsMap.forEach((pair, key) => {
         if (pair.spouses.some(id => !hasParents(id))) {
           roots.push({ key, spouses: pair.spouses, children: pair.children });
@@ -234,236 +233,26 @@
       });
     }
 
-    // Обработчики кнопок для переключения деревьев
-    document.getElementById("btnTree1").addEventListener("click", () => {
-      if (allTrees.length > 0) {
-        currentTrees = [allTrees[0]];
-        currentTransform = null; // Сбрасываем zoom/pan
-        render(currentTrees);
-      }
-    });
-
-    document.getElementById("btnTree2").addEventListener("click", () => {
-      if (allTrees.length > 1) {
-        currentTrees = [allTrees[1]];
-        currentTransform = null;
-        render(currentTrees);
-      }
-    });
-
+    // Обработчики кнопок
     document.getElementById("btnAll").addEventListener("click", () => {
-      currentTrees = allTrees;
+      currentTrees = buildTree(allPeople);
       currentTransform = null;
       render(currentTrees);
     });
-  </script>
-</body>
-</html>
 
-    .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
-    .node circle { stroke: #555; stroke-width: 2px; cursor: pointer; }
-    .male { fill: #5dade2; }
-    .female { fill: #f1948a; }
-    text { font-size: 12px; user-select: none; pointer-events: none; }
-    .surname { font-weight: bold; }
-    .maiden { font-style: italic; font-size: 11px; fill: #666; }
-  </style>
-</head>
-<body>
-  <svg width="1800" height="1000"></svg>
+    document.getElementById("btnTree1").addEventListener("click", () => {
+      const filtered = filterPeopleByTree(allPeople, "tree1");
+      currentTrees = buildTree(filtered);
+      currentTransform = null;
+      render(currentTrees);
+    });
 
-  <script>
-    let currentTransform = null; // Хранит текущую трансформацию zoom/pan
-
-    // Загружаем данные из JSON
-    fetch("db.json")
-      .then(res => res.json())
-      .then(data => {
-        const treeData = buildTree(data.people); // Строим дерево
-        render(treeData); // Рендерим
-      })
-      .catch(err => console.error("Ошибка загрузки db.json:", err));
-
-    // Построение дерева из массива людей
-    function buildTree(people) {
-      const personMap = new Map(people.map(p => [p.id, p])); // Быстрый доступ по id
-      const pairsMap = new Map(); // Хранит пары и их детей
-
-      // Формируем пары (даже если одинокие)
-      people.forEach(p => {
-        if (p.spouses?.length) {
-          p.spouses.forEach(spId => {
-            const key = [p.id, spId].sort().join("_");
-            if (!pairsMap.has(key)) {
-              pairsMap.set(key, { spouses: [p.id, spId], children: [] });
-            }
-          });
-        } else {
-          pairsMap.set(p.id, { spouses: [p.id], children: [] });
-        }
-      });
-
-      // Назначаем детей парам
-      people.forEach(p => {
-        if (p.parents?.length) {
-          const key = [...p.parents].sort().join("_");
-          if (!pairsMap.has(key)) {
-            pairsMap.set(key, { spouses: [...p.parents], children: [p.id] });
-          } else {
-            pairsMap.get(key).children.push(p.id);
-          }
-        }
-      });
-
-      const hasParents = id => personMap.get(id)?.parents?.length > 0;
-
-      const roots = [];
-      pairsMap.forEach((pair, key) => {
-        if (pair.spouses.some(id => !hasParents(id))) {
-          roots.push({ key, spouses: pair.spouses, children: pair.children });
-        }
-      });
-
-      const used = new Set(); // Контроль повторного отображения
-
-      function buildNode(key) {
-        if (used.has(key)) {
-          // Помечаем, что узел уже отрисован
-          return {
-            id: key,
-            spouses: pairsMap.get(key).spouses.map(i => personMap.get(i)),
-            children: null,
-            isReference: true
-          };
-        }
-        used.add(key);
-
-        const { spouses, children } = pairsMap.get(key);
-        return {
-          id: key,
-          spouses: spouses.map(i => personMap.get(i)),
-          children: children.map(cid => {
-            const ch = personMap.get(cid);
-            const childKey = [...new Set([ch.id, ...(ch.spouses || [])])].sort().join("_");
-            return buildNode(childKey);
-          }),
-          isReference: false
-        };
-      }
-
-      return roots.map(r => buildNode(r.key)); // Строим массив корней
-    }
-
-    function toggle(d) {
-      // Переключение детей (сворачиваем/разворачиваем)
-      if (d.children) {
-        d._children = d.children;
-        d.children = null;
-      } else if (d._children) {
-        d.children = d._children;
-        d._children = null;
-      }
-    }
-
-    function render(treeData) {
-      const svg = d3.select("svg").attr("pointer-events", "all");
-      svg.selectAll("*").remove(); // Очистка SVG
-
-      const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
-
-      // Настройка зума и панорамирования
-      svg.call(d3.zoom()
-        .scaleExtent([0.5, 3])
-        .on("zoom", e => {
-          g.attr("transform", e.transform);
-          currentTransform = e.transform; // Сохраняем текущее положение
-        })
-      );
-
-      const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
-
-      treeData.forEach((rootData, rootIndex) => {
-        const root = d3.hierarchy(rootData, d => d.children);
-        d3.tree().nodeSize([dx, dy])(root);
-        const xOff = rootIndex * 900;
-
-        // Фильтрация дубликатов связей
-        const linksData = root.links().filter(link => !link.target.data.isReference);
-
-        // Рисуем связи между узлами
-        g.selectAll(".link" + rootIndex)
-          .data(linksData)
-          .join("path")
-          .attr("class", "link")
-          .attr("d", d3.linkVertical()
-            .x(d => d.x + xOff)
-            .y(d => d.y));
-
-        // Узлы (персоны/пары)
-        const nodes = g.selectAll(".node" + rootIndex)
-          .data(root.descendants(), d => d.data.id)
-          .join(enter => enter.append("g")
-            .attr("class", "node")
-            .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
-            .on("click", (_, d) => {
-              toggle(d.data);
-              currentTransform = g.attr("transform");
-              render(treeData); // Перерисовка при клике
-            })
-          );
-
-        nodes.each(function(d) {
-          if (d.data.isReference) return; // Пропускаем повторные узлы
-
-          const el = d3.select(this), sp = d.data.spouses;
-
-          const surnameDisplay = p =>
-            p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname
-              ? p.surname
-              : p.surname;
-
-          const addMaiden = (p, x) => {
-            if (p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname) {
-              el.append("text")
-                .attr("class", "maiden")
-                .attr("x", x)
-                .attr("y", circleRadius + 16)
-                .attr("text-anchor", "middle")
-                .text(`(дев. ${p.maidenSurname})`);
-            }
-          };
-
-          if (sp.length === 2) {
-            const [a, b] = sp;
-
-            el.append("circle").attr("class", a.gender === "male" ? "male" : "female").attr("r", circleRadius).attr("cx", -spouseSpacing / 2);
-            el.append("circle").attr("class", b.gender === "male" ? "male" : "female").attr("r", circleRadius).attr("cx", spouseSpacing / 2);
-
-            el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
-            el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
-
-            addMaiden(a, -spouseSpacing / 2);
-            addMaiden(b, spouseSpacing / 2);
-
-            el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-            if (a.patronymic) el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
-            el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(b.name);
-            if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
-          } else {
-            const a = sp[0];
-
-            el.append("circle").attr("class", a.gender === "male" ? "male" : "female").attr("r", circleRadius);
-
-            el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
-
-            addMaiden(a, 0);
-
-            el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-            if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
-          }
-        });
-      });
-    }
+    document.getElementById("btnTree2").addEventListener("click", () => {
+      const filtered = filterPeopleByTree(allPeople, "tree2");
+      currentTrees = buildTree(filtered);
+      currentTransform = null;
+      render(currentTrees);
+    });
   </script>
 </body>
 </html>
