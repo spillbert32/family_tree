@@ -137,15 +137,15 @@
             addMaiden(a, -spouseSpacing/2);
             addMaiden(b, spouseSpacing/2);
             el.append("text").attr("x",-spouseSpacing/2).attr("y",circleRadius+36).attr("text-anchor","middle").text(a.name);
-            if(a.patronymic) el.append("text").attr("x",-spouseSpacing/2).attr("y",circleRadius+34).attr("text-anchor","middle").text(a.patronymic);
+            if(a.patronymic) el.append("text").attr("x",-spouseSpacing/2).attr("y",circleRadius+52).attr("text-anchor","middle").text(a.patronymic);
             el.append("text").attr("x",spouseSpacing/2).attr("y",circleRadius+36).attr("text-anchor","middle").text(b.name);
-            if(b.patronymic) el.append("text").attr("x",spouseSpacing/2).attr("y",circleRadius+34).attr("text-anchor","middle").text(b.patronymic);
+            if(b.patronymic) el.append("text").attr("x",spouseSpacing/2).attr("y",circleRadius+52).attr("text-anchor","middle").text(b.patronymic);
           } else {
             const a = sp[0];
             el.append("circle").attr("class", a.gender==="male"?"male":"female").attr("r",circleRadius);
             el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("text-anchor","middle").text(surnameDisplay(a));
             addMaiden(a, 0);
-            el.append("text").attr("x",0).attr("y",circleRadius+52).attr("text-anchor","middle").text(a.name);
+            el.append("text").attr("x",0).attr("y",circleRadius+36).attr("text-anchor","middle").text(a.name);
             if(a.patronymic) el.append("text").attr("x",0).attr("y",circleRadius+34).attr("text-anchor","middle").text(a.patronymic);
           }
 
