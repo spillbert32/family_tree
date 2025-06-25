@@ -1,46 +1,55 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Родовое древо с девичьими фамилиями и toggle</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <meta charset="UTF-8" /> <!-- Кодировка документа -->
+  <title>Родовое древо с девичьими фамилиями и toggle</title> <!-- Заголовок страницы -->
+  <script src="https://d3js.org/d3.v7.min.js"></script> <!-- Подключаем библиотеку D3.js для визуализации -->
   <style>
-    body { font-family: Arial, sans-serif; overflow: hidden; }
-    .link { fill: none; stroke: #999; stroke-width: 2px; }
-    .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; }
-    .node circle { stroke: #555; stroke-width: 2px; cursor: pointer; }
-    .male { fill: #5dade2; }
-    .female { fill: #f1948a; }
-    text { font-size: 12px; user-select: none; pointer-events: none; }
-    .surname { font-weight: bold; }
-    .maiden { font-style: italic; font-size: 11px; fill: #666; }
+    /* Стили для всей страницы */
+    body { font-family: Arial, sans-serif; overflow: hidden; } /* Шрифт и запрет прокрутки */
+    .link { fill: none; stroke: #999; stroke-width: 2px; } /* Стили для связей (линий) между узлами */
+    .link-dashed { stroke-dasharray: 4 2; stroke: #bbb; } /* Пунктирные линии для ссылочных узлов */
+    .node circle { stroke: #555; stroke-width: 2px; cursor: pointer; } /* Стиль круга для узлов, курсор - указатель */
+    .male { fill: #5dade2; } /* Цвет для мужчин (синий) */
+    .female { fill: #f1948a; } /* Цвет для женщин (розовый) */
+    text { font-size: 12px; user-select: none; pointer-events: none; } /* Стиль текста, запрещаем выделение и события */
+    .surname { font-weight: bold; } /* Фамилии — жирным шрифтом */
+    .maiden { font-style: italic; font-size: 11px; fill: #666; } /* Девичьи фамилии — курсивом, светло-серым */
   </style>
 </head>
 <body>
-  <svg width="1800" height="1000"></svg>
+  <svg width="1800" height="1000"></svg> <!-- SVG-контейнер для дерева, фиксированный размер -->
+
   <script>
+    // Загружаем JSON с данными о людях
     fetch("db.json")
-      .then(res => res.json())
+      .then(res => res.json()) // Парсим JSON
       .then(data => {
-        const treeData = buildTree(data.people);
-        render(treeData);
+        const treeData = buildTree(data.people); // Строим древовидную структуру из списка людей
+        render(treeData); // Отрисовываем дерево
       })
-      .catch(err => console.error("Ошибка загрузки db.json:", err));
+      .catch(err => console.error("Ошибка загрузки db.json:", err)); // Лог ошибок загрузки
 
+    // Функция строит древовидную структуру пар и их детей
     function buildTree(people) {
-      const personMap = new Map(people.map(p => [p.id, p]));
-      const pairsMap = new Map();
+      const personMap = new Map(people.map(p => [p.id, p])); // Map: id человека → объект человека
+      const pairsMap = new Map(); // Map пар (ключ — строка из ID супругов)
 
+      // Создаём пары супругов, или одиночек, если супругов нет
       people.forEach(p => {
         if (p.spouses?.length) {
+          // Для каждого супруга создаём пару, ключ — отсортированный по ID строка
           p.spouses.forEach(spId => {
             const key = [p.id, spId].sort().join("_");
             if (!pairsMap.has(key)) pairsMap.set(key, { spouses: [p.id, spId], children: [] });
           });
         } else {
+          // Если у человека нет супругов — одиночка
           pairsMap.set(p.id, { spouses: [p.id], children: [] });
         }
       });
+
+      // Для каждого человека добавляем его в детей пары его родителей
       people.forEach(p => {
         if (p.parents?.length) {
           const key = [...p.parents].sort().join("_");
@@ -50,7 +59,11 @@
             pairsMap.get(key).children.push(p.id);
         }
       });
+
+      // Функция проверяет, есть ли у человека родители
       const hasParents = id => personMap.get(id)?.parents?.length > 0;
+
+      // Находим корневые пары — те, у кого хотя бы один супруг без родителей (начало дерева)
       const roots = [];
       pairsMap.forEach((pair, key) => {
         if (pair.spouses.some(id => !hasParents(id))) {
@@ -58,99 +71,144 @@
         }
       });
 
+      // Множество уже обработанных ключей пар, чтобы избежать циклов и дублирования
       const used = new Set();
+
+      // Рекурсивно строит узлы дерева из пары
       function buildNode(key) {
         if (used.has(key)) {
+          // Если узел уже построен — возвращаем ссылку (для отображения пунктиром)
           return { id: key, spouses: pairsMap.get(key).spouses.map(i=>personMap.get(i)), children: null, isReference: true };
         }
-        used.add(key);
+        used.add(key); // Помечаем узел как использованный
         const { spouses, children } = pairsMap.get(key);
         return {
           id: key,
-          spouses: spouses.map(i => personMap.get(i)),
+          spouses: spouses.map(i => personMap.get(i)), // массив людей-супругов
           children: children.map(cid => {
             const ch = personMap.get(cid);
+            // Для каждого ребенка определяем ключ его пары (если есть супруг)
             const childKey = [...new Set([ch.id, ...(ch.spouses||[])])].sort().join("_");
-            return buildNode(childKey);
+            return buildNode(childKey); // Рекурсивный вызов для детей
           }),
-          isReference: false
+          isReference: false // Это не ссылка, а основной узел
         };
       }
 
+      // Возвращаем массив корневых узлов дерева
       return roots.map(r => buildNode(r.key));
     }
 
+    // Функция переключает состояние раскрытия детей у узла (сворачивание/разворачивание)
     function toggle(d) {
-      if (d.children) { d._children = d.children; d.children = null; }
-      else if (d._children) { d.children = d._children; d._children = null; }
+      if (d.children) { // Если дети раскрыты
+        d._children = d.children; // Сохраняем их в _children
+        d.children = null; // Сворачиваем
+      }
+      else if (d._children) { // Если дети свернуты
+        d.children = d._children; // Раскрываем
+        d._children = null; // Удаляем сохранённые данные
+      }
     }
 
+    // Основная функция отрисовки дерева
     function render(treeData) {
-      const svg = d3.select("svg").attr("pointer-events", "all");
-      svg.selectAll("*").remove();
-      const g = svg.append("g").attr("transform", "translate(100,50)");
-      svg.call(d3.zoom().scaleExtent([0.5,3]).on("zoom", e => g.attr("transform", e.transform)));
+      const svg = d3.select("svg").attr("pointer-events", "all"); // Выбираем SVG, включаем события мыши
+      svg.selectAll("*").remove(); // Очищаем SVG перед новой отрисовкой
+      const g = svg.append("g").attr("transform", "translate(100,50)"); // Группа с отступом слева и сверху
+      svg.call(d3.zoom().scaleExtent([0.5,3]).on("zoom", e => g.attr("transform", e.transform))); // Добавляем масштабирование и панорамирование
 
-      const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
+      const dx = 300, dy = 300; // Размер узла в px по горизонтали и вертикали
+      const spouseSpacing = 120; // Расстояние между супругами по оси X
+      const circleRadius = 28; // Радиус круга, обозначающего человека
 
+      // Отрисовываем каждое корневое дерево (если несколько корней)
       treeData.forEach((rootData, rootIndex) => {
-        const root = d3.hierarchy(rootData, d => d.children);
-        d3.tree().nodeSize([dx, dy])(root);
-        const xOff = rootIndex * 900;
+        const root = d3.hierarchy(rootData, d => d.children); // Создаём иерархическую структуру D3
+        d3.tree().nodeSize([dx, dy])(root); // Вычисляем позицию узлов с заданным размером
 
+        const xOff = rootIndex * 900; // Горизонтальный сдвиг для каждого корня (если несколько деревьев)
+
+        // Рисуем связи между узлами (линии)
         g.selectAll(".link"+rootIndex)
-          .data(root.links())
+          .data(root.links()) // Получаем связи между родителем и ребенком
           .join("path")
-          .attr("class", d => d.target.data.isReference ? "link link-dashed" : "link")
-          .attr("d", d3.linkVertical().x(d=>d.x+xOff).y(d=>d.y));
+          .attr("class", d => d.target.data.isReference ? "link link-dashed" : "link") // Пунктир для ссылочных узлов
+          .attr("d", d3.linkVertical().x(d=>d.x+xOff).y(d=>d.y)); // Вертикальная линия с смещением по X
 
+        // Рисуем узлы (людей и пары)
         const nodes = g.selectAll(".node"+rootIndex)
-          .data(root.descendants(), d=>d.data.id)
-          .join(enter => enter.append("g")
+          .data(root.descendants(), d=>d.data.id) // Все узлы дерева, ключ — id
+          .join(enter => enter.append("g") // Для новых узлов добавляем группу <g>
             .attr("class","node")
-            .attr("transform", d=>`translate(${d.x+xOff},${d.y})`)
-            .on("click", (_,d)=> { toggle(d.data); render(treeData); })
+            .attr("transform", d=>`translate(${d.x+xOff},${d.y})`) // Смещаем группу на вычисленные координаты
+            .on("click", (_,d)=> { toggle(d.data); render(treeData); }) // По клику переключаем видимость детей и перерисовываем
           );
 
+        // Для каждого узла добавляем визуальные элементы
         nodes.each(function(d) {
-          const el = d3.select(this), sp = d.data.spouses;
+          const el = d3.select(this), sp = d.data.spouses; // Выбираем текущий узел и супругов
+
+          // Функция отображения фамилии — учитываем девичью фамилию, если применимо (но сейчас просто выводит основную фамилию)
           const surnameDisplay = p => p.gender==="female" && p.spouses?.length && p.maidenSurname && p.maidenSurname!==p.surname
             ? p.surname : p.surname;
 
+          // Добавляет текст с девичьей фамилией (если есть), курсивом ниже фамилии
           const addMaiden = (p, x) => {
             if (p.gender==="female" && p.spouses?.length && p.maidenSurname && p.maidenSurname!==p.surname) {
               el.append("text")
-                .attr("class","maiden")
-                .attr("x", x)
-                .attr("y", circleRadius+16)
-                .attr("text-anchor","middle")
-                .text(`(дев. ${p.maidenSurname})`);
+                .attr("class","maiden") // Класс с курсивом и цветом
+                .attr("x", x) // Координата по X (над супругом)
+                .attr("y", circleRadius+16) // Координата по Y (ниже круга)
+                .attr("text-anchor","middle") // Выравнивание по центру
+                .text(`(дев. ${p.maidenSurname})`); // Текст девичьей фамилии
             }
           };
 
-          if (sp.length === 2) {
+          if (sp.length === 2) { // Если пара — два супруга
             const [a,b] = sp;
+            // Рисуем два круга супругов с отступом по X
             el.append("circle").attr("class", a.gender==="male"?"male":"female").attr("r",circleRadius).attr("cx",-spouseSpacing/2);
             el.append("circle").attr("class", b.gender==="male"?"male":"female").attr("r",circleRadius).attr("cx",spouseSpacing/2);
+
+            // Выводим фамилии супругов над кругами (жирным)
             el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("x",-spouseSpacing/2).attr("text-anchor","middle").text(surnameDisplay(a));
             el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("x",spouseSpacing/2).attr("text-anchor","middle").text(surnameDisplay(b));
+
+            // Добавляем девичьи фамилии, если есть
             addMaiden(a, -spouseSpacing/2);
             addMaiden(b, spouseSpacing/2);
+
+            // Выводим имя и отчество под кругами, с увеличенным отступом вниз (для девичьей фамилии)
             el.append("text").attr("x",-spouseSpacing/2).attr("y",circleRadius+36).attr("text-anchor","middle").text(a.name);
             if(a.patronymic) el.append("text").attr("x",-spouseSpacing/2).attr("y",circleRadius+52).attr("text-anchor","middle").text(a.patronymic);
             el.append("text").attr("x",spouseSpacing/2).attr("y",circleRadius+36).attr("text-anchor","middle").text(b.name);
             if(b.patronymic) el.append("text").attr("x",spouseSpacing/2).attr("y",circleRadius+52).attr("text-anchor","middle").text(b.patronymic);
-          } else {
+
+          } else { // Если один человек (без пары)
             const a = sp[0];
+            // Рисуем один круг
             el.append("circle").attr("class", a.gender==="male"?"male":"female").attr("r",circleRadius);
+
+            // Выводим фамилию над кругом (жирным)
             el.append("text").attr("class","surname").attr("y",-circleRadius-14).attr("text-anchor","middle").text(surnameDisplay(a));
+
+            // Добавляем девичью фамилию, если есть
             addMaiden(a, 0);
+
+            // Имя и отчество под кругом с отступом вниз
             el.append("text").attr("x",0).attr("y",circleRadius+36).attr("text-anchor","middle").text(a.name);
             if(a.patronymic) el.append("text").attr("x",0).attr("y",circleRadius+52).attr("text-anchor","middle").text(a.patronymic);
           }
 
+          // Если узел — ссылка (уже отображён), выводим текст-сноску под именем
           if (d.data.isReference) {
-            el.append("text").attr("y", circleRadius+48).attr("text-anchor","middle").attr("fill","#888").attr("font-style","italic").text("(уже отображено)");
+            el.append("text")
+              .attr("y", circleRadius+48)
+              .attr("text-anchor","middle")
+              .attr("fill","#888")
+              .attr("font-style","italic")
+              .text("(уже отображено)");
           }
         });
       });
