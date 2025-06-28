@@ -172,7 +172,7 @@ function render(treeData) {
             const tooltip = d3.select("#tooltip");
             const content = `
               <strong>${p.surname} ${p.name} ${p.patronymic || ''}</strong><br>
-              Дата рождения: ${p.birthYear || 'неизвестно'}<br>
+              Дата рождения: ${p.birthDate || 'неизвестно'}<br>
               Место рождения: ${p.birthPlace || 'неизвестно'}<br>
               ${p.deathYear ? 'Год смерти: ' + p.deathYear + '<br>' : ''}
               Место смерти: ${p.deathPlace || 'неизвестно'}<br>
