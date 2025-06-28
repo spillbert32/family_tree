@@ -135,7 +135,7 @@
           .data(root.descendants(), d => d.data.id)
           .join(enter => enter.append("g")
             .attr("class", "node")
-            .attr("transform", d => translate(${d.x + xOff},${d.y}))
+            .attr("transform", d => translate'${d.x + xOff},${d.y}')
             .on("click", (_, d) => {
               toggle(d.data);
               currentTransform = g.attr("transform");
