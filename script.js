@@ -92,7 +92,8 @@ function toggle(d) {
 function render(treeData) {
   const svg = d3.select("svg").attr("pointer-events", "all");
   svg.selectAll("*").remove();
-  const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
+
+  const g = svg.append("g"); // временно без transform
 
   svg.call(d3.zoom().scaleExtent([0.5, 3]).on("zoom", e => {
     g.attr("transform", e.transform);
@@ -134,7 +135,6 @@ function render(treeData) {
       const el = d3.select(this);
       const sp = d.data.spouses;
 
-      // Обновлённая логика определения возможности раскрытия
       const canExpand = (d.data.children && d.data.children.length > 0) ||
                         (d.data._children && d.data._children.length > 0);
 
@@ -179,8 +179,27 @@ function render(treeData) {
       }
     });
   });
+
+  // Центрирование дерева
+  if (!currentTransform) {
+    const gBox = g.node().getBBox();
+    const svgWidth = +svg.attr("width");
+    const svgHeight = +svg.attr("height");
+
+    const centerX = (svgWidth - gBox.width) / 2 - gBox.x;
+    const centerY = (svgHeight - gBox.height) / 2 - gBox.y;
+
+    const transform = d3.zoomIdentity.translate(centerX, centerY);
+    g.attr("transform", transform);
+    svg.call(d3.zoom().transform, transform);
+
+    currentTransform = transform;
+  } else {
+    g.attr("transform", currentTransform);
+  }
 }
 
+// Кнопки выбора семей
 document.getElementById("btnMarinichev").addEventListener("click", () => {
   currentTransform = null;
   render(trees.tree1);
