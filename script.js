@@ -1,242 +1,81 @@
-let currentTransform = null;
-let trees = {};
-let firstRender = true;  // Флаг для центрирования только при первой загрузке
+// Основная логика построения дерева и показа tooltip
 
-// Функция buildTree из твоего исходного кода
-function buildTree(people) {
-  const personMap = new Map(people.map(p => [p.id, p]));
-  const pairsMap = new Map();
-
-  people.forEach(p => {
-    if (p.spouses?.length) {
-      p.spouses.forEach(spId => {
-        const key = [p.id, spId].sort().join("_");
-        if (!pairsMap.has(key)) {
-          pairsMap.set(key, { spouses: [p.id, spId], children: [] });
-        }
-      });
-    } else {
-      pairsMap.set(p.id, { spouses: [p.id], children: [] });
-    }
-  });
-
-  people.forEach(p => {
-    if (p.parents?.length) {
-      const key = [...p.parents].sort().join("_");
-      if (!pairsMap.has(key)) {
-        pairsMap.set(key, { spouses: [...p.parents], children: [p.id] });
-      } else {
-        pairsMap.get(key).children.push(p.id);
-      }
-    }
-  });
-
-  const hasParents = id => personMap.get(id)?.parents?.length > 0;
-  const roots = [];
-
-  pairsMap.forEach((pair, key) => {
-    if (pair.spouses.some(id => !hasParents(id))) {
-      roots.push({ key, spouses: pair.spouses, children: pair.children });
-    }
-  });
-
-  const used = new Set();
-
-  function buildNode(key) {
-    if (used.has(key)) {
-      return {
-        id: key,
-        spouses: pairsMap.get(key).spouses.map(i => personMap.get(i)),
-        children: null,
-        isReference: true
-      };
-    }
-    used.add(key);
-
-    const { spouses, children } = pairsMap.get(key);
-    return {
-      id: key,
-      spouses: spouses.map(i => personMap.get(i)),
-      children: children.map(cid => {
-        const ch = personMap.get(cid);
-        const childKey = [...new Set([ch.id, ...(ch.spouses || [])])].sort().join("_");
-        return buildNode(childKey);
-      }),
-      isReference: false
-    };
-  }
-
-  return roots.map(r => buildNode(r.key));
-}
-
-// Функция переключения раскрытия/сворачивания
-function toggle(d) {
-  if (d.children) {
-    d._children = d.children;
-    d.children = null;
-  } else if (d._children) {
-    d.children = d._children;
-    d._children = null;
-  }
-}
-
-// Загрузка данных и первичная отрисовка
-fetch("db.json")
+// Загружаем JSON с данными
+fetch('db.json')
   .then(res => res.json())
   .then(data => {
-    trees = {
-      tree1: buildTree(data.marinichev),
-      tree2: buildTree(data.shapovalov),
-      tree3: buildTree(data.guzovin),
-      tree4: buildTree(data.ribasov)
-    };
-    render(trees.tree1);
-  });
-
-function render(treeData) {
-  const svg = d3.select("svg").attr("pointer-events", "all");
-  svg.selectAll("*").remove();
-
-  const g = svg.append("g")
-    .attr("transform", currentTransform || "translate(100,50)");
-
-  // Настройка зума
-  const zoom = d3.zoom()
-    .scaleExtent([0.5, 3])
-    .on("zoom", (event) => {
-      g.attr("transform", event.transform);
-      currentTransform = event.transform;
-    });
-
-  svg.call(zoom);
-
-  const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
-
-  treeData.forEach((rootData, rootIndex) => {
-    const root = d3.hierarchy(rootData, d => d.children);
-    d3.tree().nodeSize([dx, dy])(root);
-    const xOff = rootIndex * 900;
-
-    const linksData = root.links().filter(link => !link.target.data.isReference);
-
-    g.selectAll(".link" + rootIndex)
-      .data(linksData)
-      .join("path")
-      .attr("class", "link")
-      .attr("d", d3.linkVertical()
-        .x(d => d.x + xOff)
-        .y(d => d.y));
-
-    const nodes = g.selectAll(".node" + rootIndex)
-      .data(root.descendants(), d => d.data.id)
-      .join(enter => enter.append("g")
-        .attr("class", "node")
-        .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
-        .on("click", (_, d) => {
-          toggle(d.data);
-          // При клике не меняем трансформ (камеру)
-          render(treeData);
-        })
-      );
-
-    nodes.each(function(d) {
-      if (d.data.isReference) return;
-
-      const el = d3.select(this);
-      const sp = d.data.spouses;
-
-      const canExpand = (d.data.children && d.data.children.length > 0) ||
-                        (d.data._children && d.data._children.length > 0);
-
-      const maleClass = canExpand ? "expandable male" : "not-expandable male";
-      const femaleClass = canExpand ? "expandable female" : "not-expandable female";
-
-      const surnameDisplay = p =>
-        p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname
-          ? p.surname
-          : p.surname;
-
-      const addMaiden = (p, x) => {
-        if (p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname) {
-          el.append("text")
-            .attr("class", "maiden")
-            .attr("x", x)
-            .attr("y", circleRadius + 16)
-            .attr("text-anchor", "middle")
-            .text(`(дев. ${p.maidenSurname})`);
-        }
-      };
-
-      if (sp.length === 2) {
-        const [a, b] = sp;
-        el.append("circle").attr("class", a.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius).attr("cx", -spouseSpacing / 2);
-        el.append("circle").attr("class", b.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius).attr("cx", spouseSpacing / 2);
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
-        addMaiden(a, -spouseSpacing / 2);
-        addMaiden(b, spouseSpacing / 2);
-        el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-        if (a.patronymic) el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
-        el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(b.name);
-        if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
-      } else {
-        const a = sp[0];
-        el.append("circle").attr("class", a.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius);
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
-        addMaiden(a, 0);
-        el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-        if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
-      }
-    });
-
-    // Центрирование камеры при первой отрисовке
-    if (firstRender) {
-      // Вычисляем центр дерева
-      const minX = d3.min(root.descendants(), d => d.x);
-      const maxX = d3.max(root.descendants(), d => d.x);
-      const minY = d3.min(root.descendants(), d => d.y);
-      const maxY = d3.max(root.descendants(), d => d.y);
-
-      const svgWidth = +svg.attr("width") || window.innerWidth;
-      const svgHeight = +svg.attr("height") || window.innerHeight;
-
-      // Центрирование: сдвигаем так, чтобы центр дерева был по центру SVG
-      const centerX = (minX + maxX) / 2 + xOff;
-      const centerY = (minY + maxY) / 2;
-
-      // Сдвиг по координатам с масштабом 1 и без поворотов
-      const translateX = svgWidth / 2 - centerX;
-      const translateY = svgHeight / 2 - centerY;
-
-      currentTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
-      g.attr("transform", currentTransform);
-
-      firstRender = false;
+    // Собираем все люди из всех фамилий в один массив
+    const people = [];
+    for (const family in data) {
+      people.push(...data[family]);
     }
+    
+    // Пример простого построения: создадим svg и кружки для каждого человека
+    const width = document.getElementById('tree-container').clientWidth;
+    const height = document.getElementById('tree-container').clientHeight;
+
+    const svg = d3.select("#tree-container")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    // Расположим людей в линию с равными интервалами по горизонтали
+    const margin = 50;
+    const spacing = (width - 2 * margin) / (people.length - 1);
+
+    // Для простоты: каждый человек — узел с координатами x,y
+    people.forEach((person, i) => {
+      person.x = margin + i * spacing;
+      person.y = height / 2;
+    });
+
+    // Добавляем кружки
+    const nodes = svg.selectAll("circle")
+      .data(people)
+      .enter()
+      .append("circle")
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y)
+      .attr("r", 20)
+      .attr("fill", d => d.gender === "male" ? "#4a90e2" : "#e24a7a")
+      .attr("stroke", "#333")
+      .attr("stroke-width", 1.5)
+      .style("cursor", "pointer");
+
+    // Добавим подписи под кружками
+    svg.selectAll("text")
+      .data(people)
+      .enter()
+      .append("text")
+      .attr("x", d => d.x)
+      .attr("y", d => d.y + 35)
+      .attr("text-anchor", "middle")
+      .attr("font-size", 12)
+      .text(d => d.name);
+
+    // Работа с тултипом
+    const tooltip = d3.select("#tooltip");
+
+    nodes
+      .on("mouseover", (event, d) => {
+        let html = `
+          <strong>${d.name} ${d.patronymic || ""} ${d.surname}</strong><br/>
+          Год рождения: ${d.birthYear || "неизвестен"}<br/>
+          Пол: ${d.gender || "неизвестен"}<br/>
+          ${d.maidenSurname ? `Девичья фамилия: ${d.maidenSurname}<br/>` : ""}
+          Родители: ${d.parents && d.parents.length ? d.parents.join(", ") : "неизвестны"}
+        `;
+        tooltip.html(html)
+          .style("display", "block");
+      })
+      .on("mousemove", (event) => {
+        tooltip.style("left", (event.pageX + 15) + "px")
+          .style("top", (event.pageY + 15) + "px");
+      })
+      .on("mouseout", () => {
+        tooltip.style("display", "none");
+      });
+  })
+  .catch(err => {
+    console.error("Ошибка при загрузке данных:", err);
   });
-}
-
-// Кнопки переключения деревьев
-document.getElementById("btnMarinichev").addEventListener("click", () => {
-  firstRender = true;
-  currentTransform = null;
-  render(trees.tree1);
-});
-
-document.getElementById("btnShapovalov").addEventListener("click", () => {
-  firstRender = true;
-  currentTransform = null;
-  render(trees.tree2);
-});
-
-document.getElementById("btnGuzovin").addEventListener("click", () => {
-  firstRender = true;
-  currentTransform = null;
-  render(trees.tree3);
-});
-
-document.getElementById("btnRibasov").addEventListener("click", () => {
-  firstRender = true;
-  currentTransform = null;
-  render(trees.tree4);
-});
