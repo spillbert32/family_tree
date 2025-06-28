@@ -124,12 +124,11 @@ function render(treeData) {
       .attr("d", d3.linkVertical()
         .x(d => d.x + xOff)
         .y(d => d.y));
-
     const nodes = g.selectAll(".node" + rootIndex)
       .data(root.descendants(), d => d.data.id)
       .join(enter => enter.append("g")
         .attr("class", "node")
-        .attr("transform", d => translate(${d.x + xOff},${d.y}))
+        .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
         .on("click", (_, d) => {
           toggle(d.data);
           render(treeData);
@@ -159,7 +158,7 @@ function render(treeData) {
             .attr("x", x)
             .attr("y", circleRadius + 20)
             .attr("text-anchor", "middle")
-            .text((дев. ${p.maidenSurname}));
+            .text(`(дев. ${p.maidenSurname})`);
         }
       };
 
@@ -170,7 +169,7 @@ function render(treeData) {
           .attr("cx", cx)
           .on("mouseover", function(event) {
             const tooltip = d3.select("#tooltip");
-            const content = 
+            const content = `
               <strong>${p.surname} ${p.name} ${p.patronymic || ''}</strong><br>
               Дата рождения: ${p.birthDate || 'неизвестно'}<br>
               Место рождения: ${p.birthPlace || 'неизвестно'}<br>
@@ -178,7 +177,7 @@ function render(treeData) {
               Место смерти: ${p.deathPlace || 'неизвестно'}<br>
               Место жительства: ${p.location || 'неизвестно'}<br>
               Описание: ${p.description || 'Описание отсутствует'}
-            ;
+            `;
             tooltip.html(content)
               .style("left", (event.pageX + 15) + "px")
               .style("top", (event.pageY + 15) + "px")
