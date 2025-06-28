@@ -1,38 +1,38 @@
 {
   "marinichev": [
-    { "id": "M15", "name": "Логин", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1920, "gender": "male", "spouses": ["M17"], "parents": [] },
-    { "id": "M16", "name": "Александр", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 1950, "gender": "male", "spouses": [], "parents": ["M15", "M17"] },
-    { "id": "M17", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "female", "spouses": ["M15"], "parents": [] },
-    { "id": "M1", "name": "Пётр", "surname": "Мариничев", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1950, "gender": "male", "spouses": ["M2"], "parents": ["M15", "M17"] },
-    { "id": "M2", "name": "Галина", "surname": "Мариничева", "maidenSurname": "Рыбасова", "patronymic": "Александровна", "birthYear": 1953, "gender": "female", "spouses": ["M1"], "parents": [] },
-    { "id": "M3", "name": "Александр", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1975, "gender": "male", "spouses": ["M4"], "parents": ["M1", "M2"] },
-    { "id": "M4", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1978, "gender": "female", "spouses": ["M3"], "parents": [] },
-    { "id": "M5", "name": "Олег", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1978, "gender": "male", "spouses": ["M6"], "parents": ["M1", "M2"] },
-    { "id": "M6", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["M5"], "parents": ["S1", "S2"] },
-    { "id": "M7", "name": "Дмитрий", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1983, "gender": "male", "spouses": ["M8"], "parents": ["M1", "M2"] },
-    { "id": "M8", "name": "Паля", "surname": "Мариничева", "maidenSurname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1985, "gender": "female", "spouses": ["M7"], "parents": [] },
-    { "id": "M9", "name": "Владислав", "surname": "Мариничев", "patronymic": "Олегович", "birthYear": 2002, "gender": "male", "spouses": [], "parents": ["M5", "M6"] },
-    { "id": "M10", "name": "Полина", "surname": "Мариничева", "patronymic": "Олеговна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["M5", "M6"] },
-    { "id": "M11", "name": "Арсений", "surname": "Мариничев", "patronymic": "Дмитриевич", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M7", "M8"] },
-    { "id": "M12", "name": "Виктория", "surname": "Мариничева", "patronymic": "Дмитриевна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["M7", "M8"] },
-    { "id": "M13", "name": "Евгений", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M3", "M4"] },
-    { "id": "M14", "name": "Иван", "surname": "Кулаков", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M3", "M4"] }
+    { "id": "M15", "name": "Логин", "surname": "Мариничев", "patronymic": "Иванович", "birthYear": 1920, "deathYear": 1998, "gender": "male", "spouses": ["M17"], "parents": [], "location": "Санкт‑Петербург", "description": "Прадед, участник Великой Отечественной войны." },
+    { "id": "M16", "name": "Александр", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 1950, "gender": "male", "spouses": [], "parents": ["M15", "M17"], "location": "Москва", "description": "Инженер‑конструктор, любитель рыбалки." },
+    { "id": "M17", "name": "Елизавета", "surname": "Мариничева", "patronymic": "Петровна", "birthYear": 1922, "deathYear": 2005, "gender": "female", "spouses": ["M15"], "parents": [], "location": "Санкт‑Петербург", "description": "Учительница истории." },
+    { "id": "M1", "name": "Пётр", "surname": "Мариничев", "patronymic": "Иванович", "birthYear": 1950, "gender": "male", "spouses": ["M2"], "parents": ["M15", "M17"], "location": "Казань", "description": "Врач‑хирург, заядлый путешественник." },
+    { "id": "M2", "name": "Галина", "surname": "Мариничева", "maidenSurname": "Рыбасова", "patronymic": "Александровна", "birthYear": 1953, "gender": "female", "spouses": ["M1"], "parents": [], "location": "Казань", "description": "Материаловед, участница выставок народного творчества." },
+    { "id": "M3", "name": "Александр", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1975, "gender": "male", "spouses": ["M4"], "parents": ["M1", "M2"], "location": "Москва", "description": "Программист, занимается альпинизмом." },
+    { "id": "M4", "name": "Ольга", "surname": "Мариничева", "maidenSurname": "Смирнова", "patronymic": "Владимировна", "birthYear": 1978, "gender": "female", "spouses": ["M3"], "parents": [], "location": "Москва", "description": "Фотограф‑любитель." },
+    { "id": "M5", "name": "Олег", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1978, "gender": "male", "spouses": ["M6"], "parents": ["M1", "M2"], "location": "Санкт‑Петербург", "description": "Юрист, играет в шахматы." },
+    { "id": "M6", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["M5"], "parents": ["S1", "S2"], "location": "Санкт‑Петербург", "description": "Архитектор." },
+    { "id": "M7", "name": "Дмитрий", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1983, "gender": "male", "spouses": ["M8"], "parents": ["M1", "M2"], "location": "Казань", "description": "Педагог, играет на гитаре." },
+    { "id": "M8", "name": "Поля", "surname": "Мариничева", "maidenSurname": "Кузнецова", "patronymic": "Николаевна", "birthYear": 1985, "gender": "female", "spouses": ["M7"], "parents": [], "location": "Казань", "description": "Детский психолог." },
+    { "id": "M9", "name": "Владислав", "surname": "Мариничев", "patronymic": "Олегович", "birthYear": 2002, "gender": "male", "spouses": [], "parents": ["M5", "M6"], "location": "Санкт‑Петербург", "description": "Студент технического университета." },
+    { "id": "M10", "name": "Полина", "surname": "Мариничева", "patronymic": "Олеговна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["M5", "M6"], "location": "Санкт‑Петербург", "description": "Учится в школе, любит рисовать." },
+    { "id": "M11", "name": "Арсений", "surname": "Мариничев", "patronymic": "Дмитриевич", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M7", "M8"], "location": "Казань", "description": "Учится музыке." },
+    { "id": "M12", "name": "Виктория", "surname": "Мариничева", "patronymic": "Дмитриевна", "birthYear": 2006, "gender": "female", "spouses": [], "parents": ["M7", "M8"], "location": "Казань", "description": "Участвует в театральной студии." },
+    { "id": "M13", "name": "Евгений", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M3", "M4"], "location": "Москва", "description": "Интересуется робототехникой." },
+    { "id": "M14", "name": "Иван", "surname": "Кулаков", "patronymic": "Алексеевич", "birthYear": 2006, "gender": "male", "spouses": [], "parents": ["M3", "M4"], "location": "Москва", "description": "Хобби: футбол." }
   ],
   "shapovalov": [
-    { "id": "S1", "name": "Сергей", "surname": "Шаповалов", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["S2"], "parents": [] },
-    { "id": "S2", "name": "Галина", "surname": "Шаповалова", "maidenSurname": "Титянина", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1957, "gender": "female", "spouses": ["S1"], "parents": [] },
-    { "id": "S3", "name": "Михаил", "surname": "Шаповалов", "patronymic": "Сергеевич", "birthYear": 1975, "gender": "male", "spouses": [], "parents": ["S1", "S2"] },
-    { "id": "M6", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["M5"], "parents": ["S1", "S2"] },
-    { "id": "M5", "name": "Олег", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1978, "gender": "male", "spouses": ["M6"], "parents": ["M1", "M2"] }
+    { "id": "S1", "name": "Сергей", "surname": "Шаповалов", "patronymic": "Иванович", "birthYear": 1955, "gender": "male", "spouses": ["S2"], "parents": [], "location": "Сочи", "description": "Предприниматель." },
+    { "id": "S2", "name": "Галина", "surname": "Шаповалова", "maidenSurname": "Титянина", "patronymic": "Владимировна", "birthYear": 1957, "gender": "female", "spouses": ["S1"], "parents": [], "location": "Сочи", "description": "Учитель музыки." },
+    { "id": "S3", "name": "Михаил", "surname": "Шаповалов", "patronymic": "Сергеевич", "birthYear": 1975, "gender": "male", "spouses": [], "parents": ["S1", "S2"], "location": "Сочи", "description": "Фотокорреспондент." },
+    { "id": "M6", "name": "Ирина", "surname": "Мариничева", "maidenSurname": "Шаповалова", "patronymic": "Сергеевна", "birthYear": 1980, "gender": "female", "spouses": ["M5"], "parents": ["S1", "S2"], "location": "Сочи", "description": "Архитектор." },
+    { "id": "M5", "name": "Олег", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1978, "gender": "male", "spouses": ["M6"], "parents": ["M1", "M2"], "location": "Сочи", "description": "Юрист." }
   ],
   "guzovin": [
-    { "id": "G1", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["G2"], "parents": [] },
-    { "id": "G2", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["G1"], "parents": [] },
-    { "id": "G3", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": ["G1", "G2"] }
+    { "id": "G1", "name": "Николай", "surname": "Гузовин", "patronymic": "Павлович", "birthYear": 1955, "gender": "male", "spouses": ["G2"], "parents": [], "location": "Екатеринбург", "description": "Военный пенсионер." },
+    { "id": "G2", "name": "Мария", "surname": "Гузовина", "patronymic": "Львовна", "birthYear": 1955, "gender": "female", "spouses": ["G1"], "parents": [], "location": "Екатеринбург", "description": "Библиотекарь." },
+    { "id": "G3", "name": "Андрей", "surname": "Гузовин", "patronymic": "Николаевич", "birthYear": 1980, "gender": "male", "spouses": [], "parents": ["G1", "G2"], "location": "Екатеринбург", "description": "Механик." }
   ],
   "ribasov": [
-    { "id": "R1", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["R2"], "parents": [] },
-    { "id": "R2", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["R1"], "parents": [] },
-    { "id": "R3", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": ["R1", "R2"] }
+    { "id": "R1", "name": "Виктор", "surname": "Рыбасов", "patronymic": "Игоревич", "birthYear": 1955, "gender": "male", "spouses": ["R2"], "parents": [], "location": "Краснодар", "description": "Садовод‑любитель." },
+    { "id": "R2", "name": "Людмила", "surname": "Рыбасова", "patronymic": "Павловна", "birthYear": 1955, "gender": "female", "spouses": ["R1"], "parents": [], "location": "Краснодар", "description": "Учитель начальных классов." },
+    { "id": "R3", "name": "Сергей", "surname": "Рыбасов", "patronymic": "Викторович", "birthYear": 1980, "gender": "male", "spouses": [], "parents": ["R1", "R2"], "location": "Краснодар", "description": "Инженер." }
   ]
 }
