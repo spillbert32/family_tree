@@ -173,7 +173,9 @@ function render(treeData) {
             const content = `
               <strong>${p.surname} ${p.name} ${p.patronymic || ''}</strong><br>
               Год рождения: ${p.birthYear || 'неизвестно'}<br>
+              Место рождения: ${p.birthPlace || 'неизвестно'}<br>
               ${p.deathYear ? 'Год смерти: ' + p.deathYear + '<br>' : ''}
+              Место смерти: ${p.deathPlace || 'неизвестно'}<br>
               Место жительства: ${p.location || 'неизвестно'}<br>
               Описание: ${p.description || 'Описание отсутствует'}
             `;
