@@ -1,4 +1,4 @@
-let currentTransform = null;More actions
+let currentTransform = null;
 let trees = {};
 let firstRender = true;
 
