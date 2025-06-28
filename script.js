@@ -2,6 +2,23 @@ let currentTransform = null;
 let trees = {};
 let firstRender = true;
 
+const svg = d3.select("svg").attr("pointer-events", "all");
+const g = svg.append("g");
+
+const dx = 375;
+const dy = 375;
+const spouseSpacing = 150;
+const circleRadius = 35;
+
+const zoom = d3.zoom()
+  .scaleExtent([0.5, 3])
+  .on("zoom", (event) => {
+    g.attr("transform", event.transform);
+    currentTransform = event.transform;
+  });
+
+svg.call(zoom);
+
 function buildTree(people) {
   const personMap = new Map(people.map(p => [p.id, p]));
   const pairsMap = new Map();
@@ -91,24 +108,7 @@ fetch("db.json")
   });
 
 function render(treeData) {
-  const svg = d3.select("svg").attr("pointer-events", "all");
-  svg.selectAll("*").remove();
-
-  const g = svg.append("g");
-
-  const zoom = d3.zoom()
-    .scaleExtent([0.5, 3])
-    .on("zoom", (event) => {
-      g.attr("transform", event.transform);
-      currentTransform = event.transform;
-    });
-
-  svg.call(zoom);
-
-  const dx = 375; // 300 * 1.25
-  const dy = 375;
-  const spouseSpacing = 150; // 120 * 1.25
-  const circleRadius = 35; // увеличенный радиус
+  g.selectAll("*").remove();
 
   treeData.forEach((rootData, rootIndex) => {
     const root = d3.hierarchy(rootData, d => d.children);
@@ -225,16 +225,12 @@ function render(treeData) {
   const translateY = (svgHeight - gBounds.height) / 2 - gBounds.y;
 
   if (firstRender || !currentTransform) {
-    // Центрируем дерево только при первом рендере
     const initialTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
     svg.call(zoom.transform, initialTransform);
-    g.attr("transform", initialTransform);
     currentTransform = initialTransform;
     firstRender = false;
   } else {
-    // При следующих рендерах восстанавливаем текущую трансформацию
     svg.call(zoom.transform, currentTransform);
-    g.attr("transform", currentTransform);
   }
 }
 
