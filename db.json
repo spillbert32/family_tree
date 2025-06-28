@@ -1,4 +1,4 @@
-{Add commentMore actions
+{
   "marinichev": [
     { "id": "M15", "name": "Логин", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1920, "gender": "male", "spouses": ["M17"], "parents": [] },
     { "id": "M16", "name": "Александр", "surname": "Мариничев", "patronymic": "Александрович", "birthYear": 1950, "gender": "male", "spouses": [], "parents": ["M15", "M17"] },
