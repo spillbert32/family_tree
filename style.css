@@ -85,3 +85,19 @@ text {
   font-size: 12px;
   fill: #7d5a36;
 }
+
+.node circle.expandable.male {
+  fill: #d4a017; /* яркий золотисто-коричневый (ярче #b8860b) */
+}
+
+.node circle.expandable.female {
+  fill: #e0a969; /* яркий светло-коричневый (ярче #cd853f) */
+}
+
+.node circle.not-expandable.male {
+  fill: #a97f05; /* бледный золотисто-коричневый */
+}
+
+.node circle.not-expandable.female {
+  fill: #b88658; /* бледный светло-коричневый */
+}
