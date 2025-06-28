@@ -40,6 +40,9 @@ body {
 }
 
 svg {
+  position: relative; /* добавлено для правильного слоя */
+  z-index: 0;         /* ниже кнопок */
+
   width: 100vw;
   height: 100vh;
   background: #f6f1eb;
