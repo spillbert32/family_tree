@@ -1,176 +1,215 @@
-// Загрузка данных и построение дерева с центровкой камеры только при загрузке
+let currentTransform = null;Add commentMore actions
+let trees = {};
+let firstRender = true;  // Флаг для центрирования только при первой загрузке
 
-const svg = d3.select("svg");
-const width = window.innerWidth;
-const height = window.innerHeight;
+// Функция buildTree из твоего исходного кода
+function buildTree(people) {
+  const personMap = new Map(people.map(p => [p.id, p]));
+  const pairsMap = new Map();
 
-const g = svg.append("g");
-
-// Масштабирование и панорамирование
-const zoom = d3.zoom()
-  .scaleExtent([0.5, 2.5])
-  .on("zoom", (event) => {
-    g.attr("transform", event.transform);
-  });
-
-svg.call(zoom);
-
-let currentData = null;
-let root = null;
-
-const tooltip = d3.select("#tooltip");
-
-function buildHierarchy(data) {
-  // Конвертация списка в древовидную структуру для d3.hierarchy
-  // Узлы — по id, связи родители -> дети
-  const nodesById = new Map();
-  data.forEach(d => nodesById.set(d.id, {...d, children: []}));
-
-  // Добавляем детей к родителям
-  data.forEach(d => {
-    d.parents.forEach(pId => {
-      const parent = nodesById.get(pId);
-      if (parent) parent.children.push(nodesById.get(d.id));
-    });
-  });
-
-  // Находим корневых (у кого нет родителей)
-  const roots = data.filter(d => d.parents.length === 0).map(d => nodesById.get(d.id));
-  
-  if (roots.length === 1) {
-    return d3.hierarchy(roots[0]);
-  } else if (roots.length > 1) {
-    // Объединяем несколько корней в фиктивный корень
-    const fakeRoot = {id: "root", name: "Корень", children: roots};
-    return d3.hierarchy(fakeRoot);
-  } else {
-    // На всякий случай
-    return d3.hierarchy(nodesById.values().next().value);
-  }
-}
-
-function render(familyName, data) {
-  svg.selectAll("*").remove();
-  g.selectAll("*").remove();
-
-  currentData = data;
-  root = buildHierarchy(data);
-
-  const treeLayout = d3.tree().size([height - 150, width - 150]).separation((a, b) => 1);
-
-  treeLayout(root);
-
-  // Линии связей
-  g.selectAll(".link")
-    .data(root.links())
-    .join("path")
-    .attr("class", "link")
-    .attr("d", d3.linkHorizontal()
-      .x(d => d.y)
-      .y(d => d.x)
-    );
-
-  // Узлы
-  const node = g.selectAll(".node")
-    .data(root.descendants())
-    .join("g")
-    .attr("class", "node")
-    .attr("transform", d => `translate(${d.y},${d.x})`)
-    .on("mouseenter", (event, d) => {
-      showTooltip(event, d.data);
-    })
-    .on("mousemove", (event) => {
-      moveTooltip(event);
-    })
-    .on("mouseleave", () => {
-      hideTooltip();
-    });
-
-  node.append("circle")
-    .attr("r", 18)
-    .attr("class", d => d.data.gender === "male" ? "male" : "female");
-
-  node.append("text")
-    .attr("dy", -25)
-    .attr("text-anchor", "middle")
-    .attr("class", "surname")
-    .text(d => d.data.surname || "");
-
-  node.append("text")
-    .attr("dy", -10)
-    .attr("text-anchor", "middle")
-    .text(d => d.data.name || "");
-
-  // Центрируем камеру по дереву **только один раз при загрузке**
-  centerTree();
-}
-
-function centerTree() {
-  if (!root) return;
-
-  // Получаем размеры дерева
-  const nodes = root.descendants();
-  const minX = d3.min(nodes, d => d.y);
-  const maxX = d3.max(nodes, d => d.y);
-  const minY = d3.min(nodes, d => d.x);
-  const maxY = d3.max(nodes, d => d.x);
-
-  const treeWidth = maxX - minX;
-  const treeHeight = maxY - minY;
-
-  // Центрируем с некоторым отступом
-  const offsetX = (width - treeWidth) / 2 - minX;
-  const offsetY = (height - treeHeight) / 2 - minY;
-
-  // Устанавливаем трансформацию с масштабом 1 и центровкой
-  svg.transition()
-    .duration(800)
-    .call(zoom.transform, d3.zoomIdentity.translate(offsetX, offsetY).scale(1));
-}
-
-// Работа с тултипом (показ, перемещение, скрытие)
-function showTooltip(event, data) {
-  let html = `
-    <b>${data.name || "?"} ${data.surname || ""}</b><br/>
-    Отчество: ${data.patronymic || "не указано"}<br/>
-    Год рождения: ${data.birthYear || "?"}<br/>
-    Пол: ${data.gender === "male" ? "Мужской" : "Женский"}<br/>
-    ${data.maidenSurname ? `Девичья фамилия: ${data.maidenSurname}<br/>` : ""}
-    Супруги: ${data.spouses && data.spouses.length > 0 ? data.spouses.join(", ") : "нет"}<br/>
-    Родители: ${data.parents && data.parents.length > 0 ? data.parents.join(", ") : "нет"}
-  `;
-  tooltip.html(html)
-    .style("left", (event.pageX + 15) + "px")
-    .style("top", (event.pageY + 15) + "px")
-    .classed("visible", true);
-}
-
-function moveTooltip(event) {
-  tooltip
-    .style("left", (event.pageX + 15) + "px")
-    .style("top", (event.pageY + 15) + "px");
-}
-
-function hideTooltip() {
-  tooltip.classed("visible", false);
-}
-
-// Загрузка данных и рендеринг при клике на кнопку
-d3.json("db.json").then(db => {
-  function loadFamily(name) {
-    if (!db[name]) {
-      alert("Данные для семьи '" + name + "' не найдены.");
-      return;
+  people.forEach(p => {
+    if (p.spouses?.length) {
+      p.spouses.forEach(spId => {
+        const key = [p.id, spId].sort().join("_");
+        if (!pairsMap.has(key)) {
+          pairsMap.set(key, { spouses: [p.id, spId], children: [] });
+        }
+      });
+    } else {
+      pairsMap.set(p.id, { spouses: [p.id], children: [] });
     }
-    render(name, db[name]);
+  });
+
+  people.forEach(p => {
+    if (p.parents?.length) {
+      const key = [...p.parents].sort().join("_");
+      if (!pairsMap.has(key)) {
+        pairsMap.set(key, { spouses: [...p.parents], children: [p.id] });
+      } else {
+        pairsMap.get(key).children.push(p.id);
+      }
+    }
+  });
+
+  const hasParents = id => personMap.get(id)?.parents?.length > 0;
+  const roots = [];
+
+  pairsMap.forEach((pair, key) => {
+    if (pair.spouses.some(id => !hasParents(id))) {
+      roots.push({ key, spouses: pair.spouses, children: pair.children });
+    }
+  });
+
+  const used = new Set();
+
+  function buildNode(key) {
+    if (used.has(key)) {
+      return {
+        id: key,
+        spouses: pairsMap.get(key).spouses.map(i => personMap.get(i)),
+        children: null,
+        isReference: true
+      };
+    }
+    used.add(key);
+
+    const { spouses, children } = pairsMap.get(key);
+    return {
+      id: key,
+      spouses: spouses.map(i => personMap.get(i)),
+      children: children.map(cid => {
+        const ch = personMap.get(cid);
+        const childKey = [...new Set([ch.id, ...(ch.spouses || [])])].sort().join("_");
+        return buildNode(childKey);
+      }),
+      isReference: false
+    };
   }
 
-  // Загрузка начальной семьи при загрузке страницы
-  loadFamily("marinichev");
+  return roots.map(r => buildNode(r.key));
+}
 
-  // Обработчики кнопок
-  d3.selectAll("#buttons button").on("click", (event) => {
-    const family = event.target.getAttribute("data-family");
-    loadFamily(family);
+// Функция переключения раскрытия/сворачивания
+function toggle(d) {
+  if (d.children) {
+    d._children = d.children;
+    d.children = null;
+  } else if (d._children) {
+    d.children = d._children;
+    d._children = null;
+  }
+}
+
+// Загрузка данных и первичная отрисовка
+fetch("db.json")
+  .then(res => res.json())
+  .then(data => {
+    trees = {
+      tree1: buildTree(data.marinichev),
+      tree2: buildTree(data.shapovalov),
+      tree3: buildTree(data.guzovin),
+      tree4: buildTree(data.ribasov)
+    };
+    render(trees.tree1);
   });
-});
+
+function render(treeData) {
+  const svg = d3.select("svg").attr("pointer-events", "all");
+  svg.selectAll("*").remove();
+
+  const g = svg.append("g")
+    .attr("transform", currentTransform || "translate(100,50)");
+
+  // Настройка зума
+  const zoom = d3.zoom()
+    .scaleExtent([0.5, 3])
+    .on("zoom", (event) => {
+      g.attr("transform", event.transform);
+      currentTransform = event.transform;
+    });
+
+  svg.call(zoom);
+
+  const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
+
+  treeData.forEach((rootData, rootIndex) => {
+    const root = d3.hierarchy(rootData, d => d.children);
+    d3.tree().nodeSize([dx, dy])(root);
+    const xOff = rootIndex * 900;
+
+    const linksData = root.links().filter(link => !link.target.data.isReference);
+
+    g.selectAll(".link" + rootIndex)
+      .data(linksData)
+      .join("path")
+      .attr("class", "link")
+      .attr("d", d3.linkVertical()
+        .x(d => d.x + xOff)
+        .y(d => d.y));
+
+    const nodes = g.selectAll(".node" + rootIndex)
+      .data(root.descendants(), d => d.data.id)
+      .join(enter => enter.append("g")
+        .attr("class", "node")
+        .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
+        .on("click", (_, d) => {
+          toggle(d.data);
+          // При клике не меняем трансформ (камеру)
+          render(treeData);
+        })
+      );
+
+    nodes.each(function(d) {
+      if (d.data.isReference) return;
+
+      const el = d3.select(this);
+      const sp = d.data.spouses;
+
+      const canExpand = (d.data.children && d.data.children.length > 0) ||
+                        (d.data._children && d.data._children.length > 0);
+
+      const maleClass = canExpand ? "expandable male" : "not-expandable male";
+      const femaleClass = canExpand ? "expandable female" : "not-expandable female";
+
+      const surnameDisplay = p =>
+        p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname
+          ? p.surname
+          : p.surname;
+
+      const addMaiden = (p, x) => {
+        if (p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname) {
+          el.append("text")
+            .attr("class", "maiden")
+            .attr("x", x)
+            .attr("y", circleRadius + 16)
+            .attr("text-anchor", "middle")
+            .text(`(дев. ${p.maidenSurname})`);
+        }
+      };
+
+      if (sp.length === 2) {
+        const [a, b] = sp;
+        el.append("circle").attr("class", a.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius).attr("cx", -spouseSpacing / 2);
+        el.append("circle").attr("class", b.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius).attr("cx", spouseSpacing / 2);
+        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
+        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
+        addMaiden(a, -spouseSpacing / 2);
+        addMaiden(b, spouseSpacing / 2);
+        el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
+        if (a.patronymic) el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
+        el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(b.name);
+        if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
+      } else {
+        const a = sp[0];
+        el.append("circle").attr("class", a.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius);
+        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
+        addMaiden(a, 0);
+        el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
+        if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
+      }
+    });
+
+    // Центрирование камеры при первой отрисовке
+    if (firstRender) {
+      // Вычисляем центр дерева
+      const minX = d3.min(root.descendants(), d => d.x);
+      const maxX = d3.max(root.descendants(), d => d.x);
+      const minY = d3.min(root.descendants(), d => d.y);
+      const maxY = d3.max(root.descendants(), d => d.y);
+
+      const svgWidth = +svg.attr("width") || window.innerWidth;
+      const svgHeight = +svg.attr("height") || window.innerHeight;
+
+      // Центрирование: сдвигаем так, чтобы центр дерева был по центру SVG
+      const centerX = (minX + maxX) / 2 + xOff;
+      const centerY = (minY + maxY) / 2;
+
+      // Сдвиг по координатам с масштабом 1 и без поворотов
+      const translateX = svgWidth / 2 - centerX;
+      const translateY = svgHeight / 2 - centerY;
+
+      currentTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
+      g.attr("transform", currentTransform);
+
+      firstRender = false;
+    }
