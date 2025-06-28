@@ -2,11 +2,6 @@ let currentTransform = null;
 let trees = {};
 let firstRender = true;
 
-
-
-
-
-
 function buildTree(people) {
   const personMap = new Map(people.map(p => [p.id, p]));
   const pairsMap = new Map();
@@ -83,7 +78,6 @@ function toggle(d) {
   }
 }
 
-
 fetch("db.json")
   .then(res => res.json())
   .then(data => {
@@ -96,28 +90,11 @@ fetch("db.json")
     render(trees.tree1);
   });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 function render(treeData) {
   const svg = d3.select("svg").attr("pointer-events", "all");
   svg.selectAll("*").remove();
 
-  const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
+  const g = svg.append("g").attr("transform", currentTransform || "translate(150,75)"); // 100*1.5=150, 50*1.5=75
 
   const zoom = d3.zoom()
     .scaleExtent([0.5, 3])
@@ -128,12 +105,12 @@ function render(treeData) {
 
   svg.call(zoom);
 
-  const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
+  const dx = 450, dy = 450, spouseSpacing = 180, circleRadius = 42; // все *1.5
 
   treeData.forEach((rootData, rootIndex) => {
     const root = d3.hierarchy(rootData, d => d.children);
     d3.tree().nodeSize([dx, dy])(root);
-    const xOff = rootIndex * 900;
+    const xOff = rootIndex * 1350; // 900*1.5
 
     const linksData = root.links().filter(link => !link.target.data.isReference);
 
@@ -153,12 +130,6 @@ function render(treeData) {
         .on("click", (_, d) => {
           toggle(d.data);
           render(treeData);
-
-
-
-
-
-
         })
       );
 
@@ -184,7 +155,7 @@ function render(treeData) {
           el.append("text")
             .attr("class", "maiden")
             .attr("x", x)
-            .attr("y", circleRadius + 16)
+            .attr("y", circleRadius + 24)  // 16 * 1.5
             .attr("text-anchor", "middle")
             .text(`(дев. ${p.maidenSurname})`);
         }
@@ -205,25 +176,17 @@ function render(treeData) {
               Описание: ${p.description || 'Описание отсутствует'}
             `;
             tooltip.html(content)
-
-
-
-              .style("left", (event.pageX + 15) + "px")
-              .style("top", (event.pageY + 15) + "px")
+              .style("left", (event.pageX + 22.5) + "px") // 15*1.5
+              .style("top", (event.pageY + 22.5) + "px")  // 15*1.5
               .classed("visible", true);
-
           })
           .on("mousemove", function(event) {
             d3.select("#tooltip")
-              .style("left", (event.pageX + 15) + "px")
-              .style("top", (event.pageY + 15) + "px");
-
-
+              .style("left", (event.pageX + 22.5) + "px")  // 15*1.5
+              .style("top", (event.pageY + 22.5) + "px");  // 15*1.5
           })
           .on("mouseout", function() {
             d3.select("#tooltip").classed("visible", false);
-
-
           });
       };
 
@@ -232,21 +195,21 @@ function render(treeData) {
         drawPerson(a, -spouseSpacing / 2);
         drawPerson(b, spouseSpacing / 2);
 
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
+        el.append("text").attr("class", "surname").attr("y", -circleRadius - 21).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a)); // 14*1.5=21
+        el.append("text").attr("class", "surname").attr("y", -circleRadius - 21).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
         addMaiden(a, -spouseSpacing / 2);
         addMaiden(b, spouseSpacing / 2);
-        el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-        if (a.patronymic) el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
-        el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(b.name);
-        if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
+        el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 54).attr("text-anchor", "middle").text(a.name);  // 36*1.5=54
+        if (a.patronymic) el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 78).attr("text-anchor", "middle").text(a.patronymic); // 52*1.5=78
+        el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 54).attr("text-anchor", "middle").text(b.name);
+        if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 78).attr("text-anchor", "middle").text(b.patronymic);
       } else {
         const a = sp[0];
         drawPerson(a, 0);
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
+        el.append("text").attr("class", "surname").attr("y", -circleRadius - 21).attr("text-anchor", "middle").text(surnameDisplay(a));
         addMaiden(a, 0);
-        el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-        if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
+        el.append("text").attr("x", 0).attr("y", circleRadius + 54).attr("text-anchor", "middle").text(a.name);
+        if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 78).attr("text-anchor", "middle").text(a.patronymic);
       }
     });
   });
