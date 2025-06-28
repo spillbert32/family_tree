@@ -1,4 +1,4 @@
-let currentTransform = null;
+let currentTransform = null;Add commentMore actions
 let trees = {};
 let firstRender = true;  // Флаг для центрирования только при первой загрузке
 
@@ -213,4 +213,55 @@ function render(treeData) {
 
       firstRender = false;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   });
+}
+
+// Кнопки переключения деревьев
+document.getElementById("btnMarinichev").addEventListener("click", () => {
+  firstRender = true;
+  currentTransform = null;
+  render(trees.tree1);
+});
+
+document.getElementById("btnShapovalov").addEventListener("click", () => {
+  firstRender = true;
+  currentTransform = null;
+  render(trees.tree2);
+});
+
+document.getElementById("btnGuzovin").addEventListener("click", () => {
+  firstRender = true;
+  currentTransform = null;
+  render(trees.tree3);
+});
+
+document.getElementById("btnRibasov").addEventListener("click", () => {
+  firstRender = true;
+  currentTransform = null;
+  render(trees.tree4);
+});
