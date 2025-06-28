@@ -105,7 +105,10 @@ function render(treeData) {
 
   svg.call(zoom);
 
-  const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
+  // Увеличиваем параметры в 1.25 раза:
+  const dx = 300, dy = 300;
+  const spouseSpacing = 120 * 1.25; // 150
+  const circleRadius = 28 * 1.25;   // 35
 
   treeData.forEach((rootData, rootIndex) => {
     const root = d3.hierarchy(rootData, d => d.children);
@@ -155,7 +158,7 @@ function render(treeData) {
           el.append("text")
             .attr("class", "maiden")
             .attr("x", x)
-            .attr("y", circleRadius + 16)
+            .attr("y", circleRadius + 20)  // 16 * 1.25 = 20
             .attr("text-anchor", "middle")
             .text(`(дев. ${p.maidenSurname})`);
         }
@@ -195,38 +198,89 @@ function render(treeData) {
         drawPerson(a, -spouseSpacing / 2);
         drawPerson(b, spouseSpacing / 2);
 
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
+        el.append("text")
+          .attr("class", "surname")
+          .attr("y", -circleRadius - 18)  // -14 * 1.25 = -17.5 округлил до -18
+          .attr("x", -spouseSpacing / 2)
+          .attr("text-anchor", "middle")
+          .text(a.surname);
+
+        el.append("text")
+          .attr("x", -spouseSpacing / 2)
+          .attr("y", circleRadius + 45)  // 36 * 1.25 = 45
+          .attr("text-anchor", "middle")
+          .text(a.name);
+
+        if (a.patronymic) {
+          el.append("text")
+            .attr("x", -spouseSpacing / 2)
+            .attr("y", circleRadius + 65)  // 52 * 1.25 = 65
+            .attr("text-anchor", "middle")
+            .text(a.patronymic);
+        }
         addMaiden(a, -spouseSpacing / 2);
+
+        el.append("text")
+          .attr("class", "surname")
+          .attr("y", -circleRadius - 18)
+          .attr("x", spouseSpacing / 2)
+          .attr("text-anchor", "middle")
+          .text(b.surname);
+
+        el.append("text")
+          .attr("x", spouseSpacing / 2)
+          .attr("y", circleRadius + 45)
+          .attr("text-anchor", "middle")
+          .text(b.name);
+
+        if (b.patronymic) {
+          el.append("text")
+            .attr("x", spouseSpacing / 2)
+            .attr("y", circleRadius + 65)
+            .attr("text-anchor", "middle")
+            .text(b.patronymic);
+        }
         addMaiden(b, spouseSpacing / 2);
-        el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-        if (a.patronymic) el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
-        el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(b.name);
-        if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
-      } else {
+      } else if (sp.length === 1) {
         const a = sp[0];
         drawPerson(a, 0);
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
+
+        el.append("text")
+          .attr("class", "surname")
+          .attr("y", -circleRadius - 18)
+          .attr("text-anchor", "middle")
+          .text(a.surname);
+
+        el.append("text")
+          .attr("y", circleRadius + 45)
+          .attr("text-anchor", "middle")
+          .text(a.name);
+
+        if (a.patronymic) {
+          el.append("text")
+            .attr("y", circleRadius + 65)
+            .attr("text-anchor", "middle")
+            .text(a.patronymic);
+        }
         addMaiden(a, 0);
-        el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-        if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
       }
     });
   });
-
-  if (firstRender) {
-    const svgNode = svg.node();
-    const svgWidth = svgNode.clientWidth || svgNode.getBoundingClientRect().width;
-    const svgHeight = svgNode.clientHeight || svgNode.getBoundingClientRect().height;
-
-    const gBounds = g.node().getBBox();
-
-    const translateX = svgWidth / 2 - (gBounds.x + gBounds.width / 2);
-    const translateY = svgHeight / 2 - (gBounds.y + gBounds.height / 2);
-
-    const initialTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
-    svg.transition().duration(750).call(d3.zoom().transform, initialTransform);
-    currentTransform = initialTransform;
-    firstRender = false;
-  }
 }
+
+// Кнопки переключения
+document.getElementById("btnMarinichev").onclick = () => {
+  render(trees.tree1);
+};
+
+document.getElementById("btnShapovalov").onclick = () => {
+  render(trees.tree2);
+};
+
+document.getElementById("btnGuzovin").onclick = () => {
+  render(trees.tree3);
+};
+
+document.getElementById("btnRibasov").onclick = () => {
+  render(trees.tree4);
+};
