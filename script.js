@@ -1,112 +1,3 @@
-let currentTransform = null;
-let trees = {};
-let firstRender = true;
-
-const svg = d3.select("svg").attr("pointer-events", "all");
-const g = svg.append("g");
-
-const dx = 375;
-const dy = 375;
-const spouseSpacing = 150;
-const circleRadius = 35;
-
-const zoom = d3.zoom()
-  .scaleExtent([0.5, 3])
-  .on("zoom", (event) => {
-    g.attr("transform", event.transform);
-    currentTransform = event.transform;
-  });
-
-svg.call(zoom);
-
-function buildTree(people) {
-  const personMap = new Map(people.map(p => [p.id, p]));
-  const pairsMap = new Map();
-
-  people.forEach(p => {
-    if (p.spouses?.length) {
-      p.spouses.forEach(spId => {
-        const key = [p.id, spId].sort().join("_");
-        if (!pairsMap.has(key)) {
-          pairsMap.set(key, { spouses: [p.id, spId], children: [] });
-        }
-      });
-    } else {
-      pairsMap.set(p.id, { spouses: [p.id], children: [] });
-    }
-  });
-
-  people.forEach(p => {
-    if (p.parents?.length) {
-      const key = [...p.parents].sort().join("_");
-      if (!pairsMap.has(key)) {
-        pairsMap.set(key, { spouses: [...p.parents], children: [p.id] });
-      } else {
-        pairsMap.get(key).children.push(p.id);
-      }
-    }
-  });
-
-  const hasParents = id => personMap.get(id)?.parents?.length > 0;
-  const roots = [];
-
-  pairsMap.forEach((pair, key) => {
-    if (pair.spouses.some(id => !hasParents(id))) {
-      roots.push({ key, spouses: pair.spouses, children: pair.children });
-    }
-  });
-
-  const used = new Set();
-
-  function buildNode(key) {
-    if (used.has(key)) {
-      return {
-        id: key,
-        spouses: pairsMap.get(key).spouses.map(i => personMap.get(i)),
-        children: null,
-        isReference: true
-      };
-    }
-    used.add(key);
-
-    const { spouses, children } = pairsMap.get(key);
-    return {
-      id: key,
-      spouses: spouses.map(i => personMap.get(i)),
-      children: children.map(cid => {
-        const ch = personMap.get(cid);
-        const childKey = [...new Set([ch.id, ...(ch.spouses || [])])].sort().join("_");
-        return buildNode(childKey);
-      }),
-      isReference: false
-    };
-  }
-
-  return roots.map(r => buildNode(r.key));
-}
-
-function toggle(d) {
-  if (d.children) {
-    d._children = d.children;
-    d.children = null;
-  } else if (d._children) {
-    d.children = d._children;
-    d._children = null;
-  }
-}
-
-fetch("db.json")
-  .then(res => res.json())
-  .then(data => {
-    trees = {
-      tree1: buildTree(data.marinichev),
-      tree2: buildTree(data.shapovalov),
-      tree3: buildTree(data.guzovin),
-      tree4: buildTree(data.ribasov)
-    };
-    render(trees.tree1);
-  });
-
 function render(treeData) {
   g.selectAll("*").remove();
 
@@ -119,11 +10,28 @@ function render(treeData) {
 
     g.selectAll(".link" + rootIndex)
       .data(linksData)
-      .join("path")
-      .attr("class", "link")
-      .attr("d", d3.linkVertical()
-        .x(d => d.x + xOff)
-        .y(d => d.y));
+      .join(
+        enter => enter.append("path")
+          .attr("class", "link")
+          .attr("d", d3.linkVertical()
+            .x(d => d.x + xOff)
+            .y(d => d.y))
+          .each(function () {
+            const length = this.getTotalLength();
+            d3.select(this)
+              .attr("stroke-dasharray", length)
+              .attr("stroke-dashoffset", length)
+              .transition()
+              .duration(1500)
+              .ease(d3.easeCubicOut)
+              .attr("stroke-dashoffset", 0);
+          }),
+        update => update
+          .attr("d", d3.linkVertical()
+            .x(d => d.x + xOff)
+            .y(d => d.y)),
+        exit => exit.remove()
+      );
 
     const nodes = g.selectAll(".node" + rootIndex)
       .data(root.descendants(), d => d.data.id)
@@ -235,21 +143,3 @@ function render(treeData) {
     svg.call(zoom.transform, currentTransform);
   }
 }
-
-// Кнопки переключения деревьев
-document.getElementById("btnMarinichev").onclick = () => {
-  firstRender = true;
-  render(trees.tree1);
-};
-document.getElementById("btnShapovalov").onclick = () => {
-  firstRender = true;
-  render(trees.tree2);
-};
-document.getElementById("btnGuzovin").onclick = () => {
-  firstRender = true;
-  render(trees.tree3);
-};
-document.getElementById("btnRibasov").onclick = () => {
-  firstRender = true;
-  render(trees.tree4);
-};
