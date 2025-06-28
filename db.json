@@ -26,8 +26,8 @@
     { "id": "M5", "name": "Олег", "surname": "Мариничев", "patronymic": "Петрович", "birthYear": 1978, "gender": "male", "spouses": ["M6"], "parents": ["M1", "M2"] }
   ],
    "guzovin": [
-    { "id": "G1", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": [] },
-    { "id": "G2", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": [] },
+    { "id": "G1", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["G2"], "parents": [] },
+    { "id": "G2", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["G1"], "parents": [] },
     { "id": "G3", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": ["G1", "G2"] }
   ],
   "ribasov": [
