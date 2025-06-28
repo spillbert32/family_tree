@@ -119,11 +119,29 @@ function render(treeData) {
 
     g.selectAll(".link" + rootIndex)
       .data(linksData)
-      .join("path")
-      .attr("class", "link")
-      .attr("d", d3.linkVertical()
-        .x(d => d.x + xOff)
-        .y(d => d.y));
+      .join(
+        enter => enter.append("path")
+          .attr("class", "link")
+          .attr("d", d3.linkVertical()
+            .x(d => d.x + xOff)
+            .y(d => d.y))
+          .each(function () {
+            const length = this.getTotalLength();
+            d3.select(this)
+              .attr("stroke-dasharray", length)
+              .attr("stroke-dashoffset", length)
+              .transition()
+              .duration(1500)
+              .ease(d3.easeCubicOut)
+              .attr("stroke-dashoffset", 0);
+          }),
+        update => update
+          .attr("d", d3.linkVertical()
+            .x(d => d.x + xOff)
+            .y(d => d.y)),
+        exit => exit.remove()
+      );
+
     const nodes = g.selectAll(".node" + rootIndex)
       .data(root.descendants(), d => d.data.id)
       .join(enter => enter.append("g")
@@ -234,6 +252,7 @@ function render(treeData) {
     svg.call(zoom.transform, currentTransform);
   }
 }
+
 
 // Кнопки переключения деревьев
 document.getElementById("btnMarinichev").onclick = () => {
