@@ -7,14 +7,20 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Генеалогическое древо</h1>
-  
-  <div id="tree-container"></div>
-  
-  <!-- Tooltip для показа информации -->
-  <div id="tooltip"></div>
+
+  <div id="buttons">
+    <button data-family="marinichev">Мариничев</button>
+    <button data-family="shapovalov">Шаповалов</button>
+    <button data-family="guzovin">Гузовин</button>
+    <button data-family="ribasov">Рыбасов</button>
+  </div>
+
+  <svg></svg>
+
+  <div class="tooltip" id="tooltip"></div>
 
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="script.js"></script>
+
 </body>
 </html>
