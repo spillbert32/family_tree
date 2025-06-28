@@ -1,8 +1,11 @@
-
-<title>Родовое древо с выбором семьи</title>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Родовое древо с выбором семьи</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="buttons">
@@ -10,7 +13,7 @@
     <button id="btnShapovalov">Шаповаловы</button>
   </div>
   <svg width="1800" height="1000"></svg>
-  
+
   <script>
     let currentTransform = null;
     let trees = {};
@@ -101,15 +104,41 @@
       }
     }
 
+    function drawGenerationalBands(svg, g) {
+      const generations = [
+        { name: "Молчаливое поколение", start: 1928, end: 1945, color: "#f2f2f2" },
+        { name: "Бэби-бумеры", start: 1946, end: 1964, color: "#e0f7fa" },
+        { name: "Поколение X", start: 1965, end: 1980, color: "#e8f5e9" },
+        { name: "Миллениалы", start: 1981, end: 1996, color: "#fff3e0" },
+        { name: "Поколение Z", start: 1997, end: 2012, color: "#ede7f6" },
+        { name: "Поколение Альфа", start: 2013, end: 2035, color: "#fce4ec" }
+      ];
+
+      const dy = 300; // расстояние между уровнями дерева (настроено под иерархию)
+      generations.forEach((gen, i) => {
+        g.append("rect")
+          .attr("x", -2000)
+          .attr("y", i * dy)
+          .attr("width", 5000)
+          .attr("height", dy)
+          .attr("fill", gen.color)
+          .attr("opacity", 0.3);
+
+        g.append("text")
+          .attr("x", -80)
+          .attr("y", i * dy + 20)
+          .text(gen.name)
+          .attr("font-size", "12px")
+          .attr("fill", "#444");
+      });
+    }
+
     function render(treeData) {
       const svg = d3.select("svg").attr("pointer-events", "all");
       svg.selectAll("*").remove();
       const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
 
-      svg.call(d3.zoom().scaleExtent([0.5, 3]).on("zoom", e => {
-        g.attr("transform", e.transform);
-        currentTransform = e.transform;
-      }));
+      drawGenerationalBands(svg, g); // добавляем фон по поколениям
 
       const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
 
