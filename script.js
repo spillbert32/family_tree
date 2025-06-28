@@ -1,4 +1,5 @@
 let currentTransform = null;
+let isInitialRender = true;  // Флаг для центрирования только при первой загрузке
 let trees = {};
 
 fetch("db.json")
@@ -11,6 +12,7 @@ fetch("db.json")
       tree4: buildTree(data.ribasov)
     };
     render(trees.tree1);
+    isInitialRender = false;  // После первой отрисовки флаг сбрасываем
   });
 
 function buildTree(people) {
@@ -93,7 +95,7 @@ function render(treeData) {
   const svg = d3.select("svg").attr("pointer-events", "all");
   svg.selectAll("*").remove();
 
-  const g = svg.append("g"); // временно без transform
+  const g = svg.append("g");
 
   svg.call(d3.zoom().scaleExtent([0.5, 3]).on("zoom", e => {
     g.attr("transform", e.transform);
@@ -124,7 +126,7 @@ function render(treeData) {
         .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
         .on("click", (_, d) => {
           toggle(d.data);
-          currentTransform = g.attr("transform");
+          // При клике не сбрасываем трансформ, а просто рендерим с текущим
           render(treeData);
         })
       );
@@ -180,8 +182,7 @@ function render(treeData) {
     });
   });
 
-  // Центрирование дерева
-  if (!currentTransform) {
+  if (isInitialRender) {
     const gBox = g.node().getBBox();
     const svgWidth = +svg.attr("width");
     const svgHeight = +svg.attr("height");
@@ -202,20 +203,28 @@ function render(treeData) {
 // Кнопки выбора семей
 document.getElementById("btnMarinichev").addEventListener("click", () => {
   currentTransform = null;
+  isInitialRender = true;
   render(trees.tree1);
+  isInitialRender = false;
 });
 
 document.getElementById("btnShapovalov").addEventListener("click", () => {
   currentTransform = null;
+  isInitialRender = true;
   render(trees.tree2);
+  isInitialRender = false;
 });
 
 document.getElementById("btnGuzovin").addEventListener("click", () => {
   currentTransform = null;
+  isInitialRender = true;
   render(trees.tree3);
+  isInitialRender = false;
 });
 
 document.getElementById("btnRibasov").addEventListener("click", () => {
   currentTransform = null;
+  isInitialRender = true;
   render(trees.tree4);
+  isInitialRender = false;
 });
