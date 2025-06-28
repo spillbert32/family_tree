@@ -135,7 +135,6 @@ function render(treeData) {
           render(treeData);
         }));
 
-
     nodes.each(function(d) {
       if (d.data.isReference) return;
 
@@ -217,9 +216,6 @@ function render(treeData) {
     });
   });
 
-
-
-
   const gBounds = g.node().getBBox();
   const svgNode = svg.node();
   const svgWidth = svgNode.clientWidth;
@@ -228,29 +224,21 @@ function render(treeData) {
   const translateX = (svgWidth - gBounds.width) / 2 - gBounds.x;
   const translateY = (svgHeight - gBounds.height) / 2 - gBounds.y;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const initialTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
-  svg.call(zoom.transform, initialTransform);
-  g.attr("transform", initialTransform);
-  currentTransform = initialTransform;
-  firstRender = false;
+  if (firstRender || !currentTransform) {
+    // Центрируем дерево только при первом рендере
+    const initialTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
+    svg.call(zoom.transform, initialTransform);
+    g.attr("transform", initialTransform);
+    currentTransform = initialTransform;
+    firstRender = false;
+  } else {
+    // При следующих рендерах восстанавливаем текущую трансформацию
+    svg.call(zoom.transform, currentTransform);
+    g.attr("transform", currentTransform);
+  }
 }
 
-// Кнопки
+// Кнопки переключения деревьев
 document.getElementById("btnMarinichev").onclick = () => {
   firstRender = true;
   render(trees.tree1);
