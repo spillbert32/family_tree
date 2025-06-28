@@ -7,8 +7,10 @@
   <div id="buttons">
     <button id="btnMarinichev">Мариничевы</button>
     <button id="btnShapovalov">Шаповаловы</button>
+    <button id="btnShapovalov">Рыбасовы</button>
+    <button id="btnShapovalov">Гузовины</button>
   </div>
-  <svg width="1800" height="1000"></svg>
+  <svg width="1920" height="1080"></svg>
   
   <script>
     let currentTransform = null;
@@ -19,7 +21,9 @@
       .then(data => {
         trees = {
           tree1: buildTree(data.marinichev),
-          tree2: buildTree(data.shapovalov)
+          tree2: buildTree(data.shapovalov),
+          tree3: buildTree(data.guzovin)
+          tree4: buildTree(data.ribasov)
         };
         render(trees.tree1);
       });
