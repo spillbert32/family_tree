@@ -31,8 +31,8 @@
     { "id": "G3", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": ["G1", "G2"] }
   ],
   "ribasov": [
-    { "id": "R1", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": [] },
-    { "id": "R2", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": [] },
+    { "id": "R1", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["R2"], "parents": [] },
+    { "id": "R2", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": ["R1"], "parents": [] },
     { "id": "R3", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": ["R1", "R2"] }
   ]
 }
