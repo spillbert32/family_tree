@@ -1,8 +1,7 @@
 let currentTransform = null;
 let trees = {};
-let firstRender = true;  // Флаг для центрирования только при первой загрузке
+let firstRender = true;
 
-// Функция buildTree из твоего исходного кода
 function buildTree(people) {
   const personMap = new Map(people.map(p => [p.id, p]));
   const pairsMap = new Map();
@@ -69,7 +68,6 @@ function buildTree(people) {
   return roots.map(r => buildNode(r.key));
 }
 
-// Функция переключения раскрытия/сворачивания
 function toggle(d) {
   if (d.children) {
     d._children = d.children;
@@ -80,7 +78,6 @@ function toggle(d) {
   }
 }
 
-// Загрузка данных и первичная отрисовка
 fetch("db.json")
   .then(res => res.json())
   .then(data => {
@@ -97,10 +94,8 @@ function render(treeData) {
   const svg = d3.select("svg").attr("pointer-events", "all");
   svg.selectAll("*").remove();
 
-  const g = svg.append("g")
-    .attr("transform", currentTransform || "translate(100,50)");
+  const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
 
-  // Настройка зума
   const zoom = d3.zoom()
     .scaleExtent([0.5, 3])
     .on("zoom", (event) => {
@@ -134,7 +129,6 @@ function render(treeData) {
         .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
         .on("click", (_, d) => {
           toggle(d.data);
-          // При клике не меняем трансформ (камеру)
           render(treeData);
         })
       );
@@ -167,10 +161,40 @@ function render(treeData) {
         }
       };
 
+      const drawPerson = (p, cx) => {
+        el.append("circle")
+          .attr("class", p.gender === "male" ? maleClass : femaleClass)
+          .attr("r", circleRadius)
+          .attr("cx", cx)
+          .on("mouseover", function(event) {
+            const tooltip = d3.select("#tooltip");
+            const content = `
+              <strong>${p.surname} ${p.name} ${p.patronymic || ''}</strong><br>
+              Год рождения: ${p.birthYear || 'неизвестно'}<br>
+              ${p.deathYear ? 'Год смерти: ' + p.deathYear + '<br>' : ''}
+              Место жительства: ${p.location || 'неизвестно'}<br>
+              Описание: ${p.description || 'Описание отсутствует'}
+            `;
+            tooltip.html(content)
+              .style("left", (event.pageX + 15) + "px")
+              .style("top", (event.pageY + 15) + "px")
+              .classed("visible", true);
+          })
+          .on("mousemove", function(event) {
+            d3.select("#tooltip")
+              .style("left", (event.pageX + 15) + "px")
+              .style("top", (event.pageY + 15) + "px");
+          })
+          .on("mouseout", function() {
+            d3.select("#tooltip").classed("visible", false);
+          });
+      };
+
       if (sp.length === 2) {
         const [a, b] = sp;
-        el.append("circle").attr("class", a.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius).attr("cx", -spouseSpacing / 2);
-        el.append("circle").attr("class", b.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius).attr("cx", spouseSpacing / 2);
+        drawPerson(a, -spouseSpacing / 2);
+        drawPerson(b, spouseSpacing / 2);
+
         el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
         el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
         addMaiden(a, -spouseSpacing / 2);
@@ -181,87 +205,41 @@ function render(treeData) {
         if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
       } else {
         const a = sp[0];
-        el.append("circle").attr("class", a.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius);
+        drawPerson(a, 0);
         el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
         addMaiden(a, 0);
         el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
         if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
       }
     });
-
-    // Центрирование камеры при первой отрисовке
-    if (firstRender) {
-      // Вычисляем центр дерева
-      const minX = d3.min(root.descendants(), d => d.x);
-      const maxX = d3.max(root.descendants(), d => d.x);
-      const minY = d3.min(root.descendants(), d => d.y);
-      const maxY = d3.max(root.descendants(), d => d.y);
-
-      const svgWidth = +svg.attr("width") || window.innerWidth;
-      const svgHeight = +svg.attr("height") || window.innerHeight;
-
-      // Центрирование: сдвигаем так, чтобы центр дерева был по центру SVG
-      const centerX = (minX + maxX) / 2 + xOff;
-      const centerY = (minY + maxY) / 2;
-
-      // Сдвиг по координатам с масштабом 1 и без поворотов
-      const translateX = svgWidth / 2 - centerX;
-      const translateY = svgHeight / 2 - centerY;
-
-      currentTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
-      g.attr("transform", currentTransform);
-
-      firstRender = false;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   });
+
+  if (firstRender) {
+    const svgBounds = svg.node().getBBox();
+    const gBounds = g.node().getBBox();
+    const translateX = (svgBounds.width - gBounds.width) / 2 - gBounds.x;
+    const translateY = (svgBounds.height - gBounds.height) / 2 - gBounds.y;
+
+    const initialTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
+    svg.transition().duration(750).call(d3.zoom().transform, initialTransform);
+    currentTransform = initialTransform;
+    firstRender = false;
+  }
 }
 
-// Кнопки переключения деревьев
-document.getElementById("btnMarinichev").addEventListener("click", () => {
+document.getElementById("btnMarinichev").onclick = () => {
   firstRender = true;
-  currentTransform = null;
   render(trees.tree1);
-});
-
-document.getElementById("btnShapovalov").addEventListener("click", () => {
+};
+document.getElementById("btnShapovalov").onclick = () => {
   firstRender = true;
-  currentTransform = null;
   render(trees.tree2);
-});
-
-document.getElementById("btnGuzovin").addEventListener("click", () => {
+};
+document.getElementById("btnGuzovin").onclick = () => {
   firstRender = true;
-  currentTransform = null;
   render(trees.tree3);
-});
-
-document.getElementById("btnRibasov").addEventListener("click", () => {
+};
+document.getElementById("btnRibasov").onclick = () => {
   firstRender = true;
-  currentTransform = null;
   render(trees.tree4);
-});
+};
