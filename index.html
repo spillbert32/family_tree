@@ -1,6 +1,10 @@
-<title>Родовое древо с выбором семьи</title>
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<link rel="stylesheet" href="style.css">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Родовое древо с выбором семьи</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="buttons">
@@ -9,7 +13,10 @@
     <button id="btnGuzovin">Гузовины</button>
     <button id="btnRibasov">Рыбасовы</button>
   </div>
+
   <svg width="1800" height="1000"></svg>
+
+  <div class="tooltip" id="tooltip"></div>
 
   <script src="script.js"></script>
 </body>
