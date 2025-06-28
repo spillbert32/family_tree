@@ -1,4 +1,4 @@
-let currentTransform = null;Add commentMore actions
+let currentTransform = null;
 let trees = {};
 let firstRender = true;  // Флаг для центрирования только при первой загрузке
 
