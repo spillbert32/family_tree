@@ -134,8 +134,9 @@ function render(treeData) {
       const el = d3.select(this);
       const sp = d.data.spouses;
 
-      // Проверяем, можно ли раскрыть дальше
-      const canExpand = d.data.children && d.data.children.length > 0;
+      // Обновлённая логика определения возможности раскрытия
+      const canExpand = (d.data.children && d.data.children.length > 0) ||
+                        (d.data._children && d.data._children.length > 0);
 
       const maleClass = canExpand ? "expandable male" : "not-expandable male";
       const femaleClass = canExpand ? "expandable female" : "not-expandable female";
