@@ -174,8 +174,6 @@
         nodes.each(function(d) {
           if (d.data.isReference) return;
 
-          if (d.data.isReference) return;
-
           const el = d3.select(this), sp = d.data.spouses;
 
           // Проверяем, можно ли раскрыть дальше
@@ -184,8 +182,6 @@
           const maleClass = canExpand ? "expandable male" : "not-expandable male";
           const femaleClass = canExpand ? "expandable female" : "not-expandable female";
           
-          const el = d3.select(this), sp = d.data.spouses;
-
           const surnameDisplay = p =>
             p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname
               ? p.surname
