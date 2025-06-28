@@ -174,6 +174,16 @@
         nodes.each(function(d) {
           if (d.data.isReference) return;
 
+          if (d.data.isReference) return;
+
+          const el = d3.select(this), sp = d.data.spouses;
+
+          // Проверяем, можно ли раскрыть дальше
+          const canExpand = d.data.children && d.data.children.length > 0;
+
+          const maleClass = canExpand ? "expandable male" : "not-expandable male";
+          const femaleClass = canExpand ? "expandable female" : "not-expandable female";
+          
           const el = d3.select(this), sp = d.data.spouses;
 
           const surnameDisplay = p =>
@@ -194,6 +204,8 @@
 
           if (sp.length === 2) {
             const [a, b] = sp;
+            el.append("circle").attr("class", a.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius).attr("cx", -spouseSpacing / 2);
+            el.append("circle").attr("class", b.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius).attr("cx", spouseSpacing / 2);
             el.append("circle").attr("class", a.gender === "male" ? "male" : "female").attr("r", circleRadius).attr("cx", -spouseSpacing / 2);
             el.append("circle").attr("class", b.gender === "male" ? "male" : "female").attr("r", circleRadius).attr("cx", spouseSpacing / 2);
             el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
@@ -206,6 +218,7 @@
             if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
           } else {
             const a = sp[0];
+            el.append("circle").attr("class", a.gender === "male" ? maleClass : femaleClass).attr("r", circleRadius);
             el.append("circle").attr("class", a.gender === "male" ? "male" : "female").attr("r", circleRadius);
             el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
             addMaiden(a, 0);
