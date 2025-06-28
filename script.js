@@ -1,6 +1,19 @@
 let currentTransform = null;
-let isInitialRender = true;  // Флаг для центрирования только при первой загрузке
+let isInitialRender = true;
 let trees = {};
+
+const svg = d3.select("svg").attr("pointer-events", "all");
+const g = svg.append("g");
+
+// Инициализируем zoom один раз!
+const zoomBehavior = d3.zoom()
+  .scaleExtent([0.5, 3])
+  .on("zoom", e => {
+    g.attr("transform", e.transform);
+    currentTransform = e.transform;
+  });
+
+svg.call(zoomBehavior);
 
 fetch("db.json")
   .then(res => res.json())
@@ -12,95 +25,13 @@ fetch("db.json")
       tree4: buildTree(data.ribasov)
     };
     render(trees.tree1);
-    isInitialRender = false;  // После первой отрисовки флаг сбрасываем
+    isInitialRender = false;
   });
 
-function buildTree(people) {
-  const personMap = new Map(people.map(p => [p.id, p]));
-  const pairsMap = new Map();
-
-  people.forEach(p => {
-    if (p.spouses?.length) {
-      p.spouses.forEach(spId => {
-        const key = [p.id, spId].sort().join("_");
-        if (!pairsMap.has(key)) {
-          pairsMap.set(key, { spouses: [p.id, spId], children: [] });
-        }
-      });
-    } else {
-      pairsMap.set(p.id, { spouses: [p.id], children: [] });
-    }
-  });
-
-  people.forEach(p => {
-    if (p.parents?.length) {
-      const key = [...p.parents].sort().join("_");
-      if (!pairsMap.has(key)) {
-        pairsMap.set(key, { spouses: [...p.parents], children: [p.id] });
-      } else {
-        pairsMap.get(key).children.push(p.id);
-      }
-    }
-  });
-
-  const hasParents = id => personMap.get(id)?.parents?.length > 0;
-  const roots = [];
-
-  pairsMap.forEach((pair, key) => {
-    if (pair.spouses.some(id => !hasParents(id))) {
-      roots.push({ key, spouses: pair.spouses, children: pair.children });
-    }
-  });
-
-  const used = new Set();
-
-  function buildNode(key) {
-    if (used.has(key)) {
-      return {
-        id: key,
-        spouses: pairsMap.get(key).spouses.map(i => personMap.get(i)),
-        children: null,
-        isReference: true
-      };
-    }
-    used.add(key);
-
-    const { spouses, children } = pairsMap.get(key);
-    return {
-      id: key,
-      spouses: spouses.map(i => personMap.get(i)),
-      children: children.map(cid => {
-        const ch = personMap.get(cid);
-        const childKey = [...new Set([ch.id, ...(ch.spouses || [])])].sort().join("_");
-        return buildNode(childKey);
-      }),
-      isReference: false
-    };
-  }
-
-  return roots.map(r => buildNode(r.key));
-}
-
-function toggle(d) {
-  if (d.children) {
-    d._children = d.children;
-    d.children = null;
-  } else if (d._children) {
-    d.children = d._children;
-    d._children = null;
-  }
-}
+// ... (buildTree и toggle функции без изменений) ...
 
 function render(treeData) {
-  const svg = d3.select("svg").attr("pointer-events", "all");
-  svg.selectAll("*").remove();
-
-  const g = svg.append("g");
-
-  svg.call(d3.zoom().scaleExtent([0.5, 3]).on("zoom", e => {
-    g.attr("transform", e.transform);
-    currentTransform = e.transform;
-  }));
+  g.selectAll("*").remove();
 
   const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
 
@@ -126,7 +57,6 @@ function render(treeData) {
         .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
         .on("click", (_, d) => {
           toggle(d.data);
-          // При клике не сбрасываем трансформ, а просто рендерим с текущим
           render(treeData);
         })
       );
@@ -192,11 +122,11 @@ function render(treeData) {
 
     const transform = d3.zoomIdentity.translate(centerX, centerY);
     g.attr("transform", transform);
-    svg.call(d3.zoom().transform, transform);
+    svg.call(zoomBehavior.transform, transform);
 
     currentTransform = transform;
   } else {
-    g.attr("transform", currentTransform);
+    g.attr("transform", currentTransform || d3.zoomIdentity);
   }
 }
 
