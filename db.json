@@ -27,8 +27,10 @@
   ],
    "guzovin": [
     { "id": "G1", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": [] },
+    { "id": "G2", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": ["G1"] }
   ],
   "ribasov": [
     { "id": "R1", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": [] },
+    { "id": "R2", "name": "ЗАПОЛНИТЬ", "surname": "ЗАПОЛНИТЬ", "patronymic": "ЗАПОЛНИТЬ", "birthYear": 1955, "gender": "male", "spouses": [], "parents": ["R1"] }
   ]
 }
