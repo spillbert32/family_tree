@@ -266,21 +266,43 @@ function render(treeData) {
       }
     });
   });
+  if (firstRender) {
+    const svgNode = svg.node();
+    const svgWidth = svgNode.clientWidth || svgNode.getBoundingClientRect().width;
+    const svgHeight = svgNode.clientHeight || svgNode.getBoundingClientRect().height;
+    const gBounds = g.node().getBBox();
+
+    const translateX = svgWidth / 2 - (gBounds.x + gBounds.width / 2);
+    const translateY = svgHeight / 2 - (gBounds.y + gBounds.height / 2);
+    const initialTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
+
+    svg.transition().duration(750).call(d3.zoom().transform, initialTransform);
+    currentTransform = initialTransform;
+    firstRender = false;
+  }
 }
 
 // Кнопки переключения
 document.getElementById("btnMarinichev").onclick = () => {
+  firstRender = true;
+  currentTransform = null;
   render(trees.tree1);
 };
 
 document.getElementById("btnShapovalov").onclick = () => {
+  firstRender = true;
+  currentTransform = null;
   render(trees.tree2);
 };
 
 document.getElementById("btnGuzovin").onclick = () => {
+  firstRender = true;
+  currentTransform = null;
   render(trees.tree3);
 };
 
 document.getElementById("btnRibasov").onclick = () => {
+  firstRender = true;
+  currentTransform = null;
   render(trees.tree4);
 };
