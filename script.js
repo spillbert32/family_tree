@@ -2,6 +2,11 @@ let currentTransform = null;
 let trees = {};
 let firstRender = true;
 
+// Проверка устройства
+function isMobile() {
+  return /Mobi|Android/i.test(navigator.userAgent);
+}
+
 function buildTree(people) {
   const personMap = new Map(people.map(p => [p.id, p]));
   const pairsMap = new Map();
@@ -32,7 +37,6 @@ function buildTree(people) {
 
   const hasParents = id => personMap.get(id)?.parents?.length > 0;
   const roots = [];
-
   pairsMap.forEach((pair, key) => {
     if (pair.spouses.some(id => !hasParents(id))) {
       roots.push({ key, spouses: pair.spouses, children: pair.children });
@@ -40,7 +44,6 @@ function buildTree(people) {
   });
 
   const used = new Set();
-
   function buildNode(key) {
     if (used.has(key)) {
       return {
@@ -51,7 +54,6 @@ function buildTree(people) {
       };
     }
     used.add(key);
-
     const { spouses, children } = pairsMap.get(key);
     return {
       id: key,
@@ -64,7 +66,6 @@ function buildTree(people) {
       isReference: false
     };
   }
-
   return roots.map(r => buildNode(r.key));
 }
 
@@ -78,6 +79,7 @@ function toggle(d) {
   }
 }
 
+// Загрузка данных
 fetch("db.json")
   .then(res => res.json())
   .then(data => {
@@ -90,11 +92,28 @@ fetch("db.json")
     render(trees.tree1);
   });
 
+function showModal(person) {
+  const modal = document.getElementById("modal");
+  const content = document.getElementById("modal-content");
+  content.innerHTML = `
+    <strong>${person.surname} ${person.name} ${person.patronymic || ''}</strong><br>
+    Год рождения: ${person.birthYear || 'неизвестно'}<br>
+    ${person.deathYear ? 'Год смерти: ' + person.deathYear + '<br>' : ''}
+    Место жительства: ${person.location || 'неизвестно'}<br>
+    Описание: ${person.description || 'Описание отсутствует'}
+  `;
+  modal.style.display = "flex";
+}
+
+document.getElementById("modal").onclick = () => {
+  document.getElementById("modal").style.display = "none";
+};
+
 function render(treeData) {
-  const svg = d3.select("svg").attr("pointer-events", "all");
+  const svg = d3.select("svg");
   svg.selectAll("*").remove();
 
-  const g = svg.append("g").attr("transform", currentTransform || "translate(100,50)");
+  const g = svg.append("g").attr("transform", currentTransform || "translate(0,0)");
 
   const zoom = d3.zoom()
     .scaleExtent([0.5, 3])
@@ -105,15 +124,14 @@ function render(treeData) {
 
   svg.call(zoom);
 
-  const dx = 300, dy = 300, spouseSpacing = 120, circleRadius = 28;
+  const dx = 300, dy = 300, spouseSpacing = isMobile() ? 150 : 120, circleRadius = isMobile() ? 40 : 28;
 
   treeData.forEach((rootData, rootIndex) => {
     const root = d3.hierarchy(rootData, d => d.children);
     d3.tree().nodeSize([dx, dy])(root);
-    const xOff = rootIndex * 900;
+    const xOff = rootIndex * (isMobile() ? 1000 : 900);
 
     const linksData = root.links().filter(link => !link.target.data.isReference);
-
     g.selectAll(".link" + rootIndex)
       .data(linksData)
       .join("path")
@@ -128,118 +146,86 @@ function render(treeData) {
         .attr("class", "node")
         .attr("transform", d => `translate(${d.x + xOff},${d.y})`)
         .on("click", (_, d) => {
-          toggle(d.data);
-          render(treeData);
+          if (isMobile()) {
+            // Показать модальное окно по первому человеку
+            const p = d.data.spouses[0];
+            if (p) showModal(p);
+          } else {
+            toggle(d.data);
+            render(treeData);
+          }
         })
       );
 
     nodes.each(function(d) {
       if (d.data.isReference) return;
-
       const el = d3.select(this);
       const sp = d.data.spouses;
-
-      const canExpand = (d.data.children && d.data.children.length > 0) ||
-                        (d.data._children && d.data._children.length > 0);
-
+      const canExpand = (d.data.children?.length > 0) || (d.data._children?.length > 0);
       const maleClass = canExpand ? "expandable male" : "not-expandable male";
       const femaleClass = canExpand ? "expandable female" : "not-expandable female";
-
-      const surnameDisplay = p =>
-        p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname
-          ? p.surname
-          : p.surname;
-
-      const addMaiden = (p, x) => {
-        if (p.gender === "female" && p.spouses?.length && p.maidenSurname && p.maidenSurname !== p.surname) {
-          el.append("text")
-            .attr("class", "maiden")
-            .attr("x", x)
-            .attr("y", circleRadius + 16)
-            .attr("text-anchor", "middle")
-            .text(`(дев. ${p.maidenSurname})`);
-        }
-      };
 
       const drawPerson = (p, cx) => {
         el.append("circle")
           .attr("class", p.gender === "male" ? maleClass : femaleClass)
           .attr("r", circleRadius)
           .attr("cx", cx)
-          .on("mouseover", function(event) {
-            const tooltip = d3.select("#tooltip");
-            const content = `
-              <strong>${p.surname} ${p.name} ${p.patronymic || ''}</strong><br>
-              Год рождения: ${p.birthYear || 'неизвестно'}<br>
-              ${p.deathYear ? 'Год смерти: ' + p.deathYear + '<br>' : ''}
-              Место жительства: ${p.location || 'неизвестно'}<br>
-              Описание: ${p.description || 'Описание отсутствует'}
-            `;
-            tooltip.html(content)
+          .on(isMobile() ? "click" : "mouseover", function(event) {
+            if (isMobile()) {
+              showModal(p);
+              event.stopPropagation();
+            } else {
+              const tooltip = d3.select("#tooltip");
+              tooltip.html(`
+                <strong>${p.surname} ${p.name} ${p.patronymic || ''}</strong><br>
+                Год рождения: ${p.birthYear || 'неизвестно'}<br>
+                ${p.deathYear ? 'Год смерти: ' + p.deathYear + '<br>' : ''}
+                Место жительства: ${p.location || 'неизвестно'}<br>
+                Описание: ${p.description || 'Описание отсутствует'}
+              `)
               .style("left", (event.pageX + 15) + "px")
               .style("top", (event.pageY + 15) + "px")
               .classed("visible", true);
+            }
           })
           .on("mousemove", function(event) {
-            d3.select("#tooltip")
-              .style("left", (event.pageX + 15) + "px")
-              .style("top", (event.pageY + 15) + "px");
+            if (!isMobile()) {
+              d3.select("#tooltip")
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY + 15) + "px");
+            }
           })
           .on("mouseout", function() {
-            d3.select("#tooltip").classed("visible", false);
+            if (!isMobile()) {
+              d3.select("#tooltip").classed("visible", false);
+            }
           });
       };
 
       if (sp.length === 2) {
-        const [a, b] = sp;
-        drawPerson(a, -spouseSpacing / 2);
-        drawPerson(b, spouseSpacing / 2);
-
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", -spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(a));
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("x", spouseSpacing / 2).attr("text-anchor", "middle").text(surnameDisplay(b));
-        addMaiden(a, -spouseSpacing / 2);
-        addMaiden(b, spouseSpacing / 2);
-        el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-        if (a.patronymic) el.append("text").attr("x", -spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
-        el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(b.name);
-        if (b.patronymic) el.append("text").attr("x", spouseSpacing / 2).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(b.patronymic);
+        drawPerson(sp[0], -spouseSpacing / 2);
+        drawPerson(sp[1], spouseSpacing / 2);
       } else {
-        const a = sp[0];
-        drawPerson(a, 0);
-        el.append("text").attr("class", "surname").attr("y", -circleRadius - 14).attr("text-anchor", "middle").text(surnameDisplay(a));
-        addMaiden(a, 0);
-        el.append("text").attr("x", 0).attr("y", circleRadius + 36).attr("text-anchor", "middle").text(a.name);
-        if (a.patronymic) el.append("text").attr("x", 0).attr("y", circleRadius + 52).attr("text-anchor", "middle").text(a.patronymic);
+        drawPerson(sp[0], 0);
       }
     });
   });
 
   if (firstRender) {
-    const svgBounds = svg.node().getBBox();
-    const gBounds = g.node().getBBox();
-    const translateX = (svgBounds.width - gBounds.width) / 2 - gBounds.x;
-    const translateY = (svgBounds.height - gBounds.height) / 2 - gBounds.y;
-
-    const initialTransform = d3.zoomIdentity.translate(translateX, translateY).scale(1);
-    svg.transition().duration(750).call(d3.zoom().transform, initialTransform);
-    currentTransform = initialTransform;
+    const bounds = svg.node().getBBox();
+    const centerX = bounds.width / 2;
+    const centerY = bounds.height / 2;
+    const initial = d3.zoomIdentity.translate(svg.node().viewBox.baseVal.width / 2 - centerX, svg.node().viewBox.baseVal.height / 2 - centerY).scale(1);
+    svg.call(d3.zoom().transform, initial);
+    currentTransform = initial;
     firstRender = false;
   }
 }
 
-document.getElementById("btnMarinichev").onclick = () => {
-  firstRender = true;
-  render(trees.tree1);
-};
-document.getElementById("btnShapovalov").onclick = () => {
-  firstRender = true;
-  render(trees.tree2);
-};
-document.getElementById("btnGuzovin").onclick = () => {
-  firstRender = true;
-  render(trees.tree3);
-};
-document.getElementById("btnRibasov").onclick = () => {
-  firstRender = true;
-  render(trees.tree4);
-};
+// Кнопки переключения деревьев
+["Marinichev","Shapovalov","Guzovin","Ribasov"].forEach(name => {
+  document.getElementById(`btn${name}`).onclick = () => {
+    firstRender = true;
+    render(trees[`tree${["Marinichev","Shapovalov","Guzovin","Ribasov"].indexOf(name)+1}`]);
+  };
+});
